@@ -18,11 +18,3 @@ jobs:
       run: make
     - name: make clean
       run: make clean
-    - name: make fclean
-      run: make fclean
-    - name: make re
-      run: make re
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
