@@ -7,6 +7,7 @@
 #include <exception>
 #include <iostream>
 #include <memory>
+#include <filesystem>
 
 int main(int ac, char **av)
 {
@@ -47,6 +48,11 @@ int main(int ac, char **av)
             return (0);
         }
 
+        // if (vm.count("out-folder")) {
+        //     std::cout << outFolder << "\n";
+        //     return (0);
+        // }
+
     }
     catch (const std::exception &e)
     {
@@ -54,16 +60,25 @@ int main(int ac, char **av)
         return (1);
     }
 
-    torch::jit::script::Module encoderModule;
-    torch::jit::script::Module decoderModule;
+    // torch::jit::script::Module encoderModule;
+    // torch::jit::script::Module decoderModule;
 
-    try {
-        encoderModule = torch::jit::load(encoder);
-        decoderModule = torch::jit::load(decoder);
-    } catch (const c10::Error& e) {
-        std::cerr << "Errors(s): " << e.what() << "\n";
-        return (1);
-    }
+    // try {
+    //     encoderModule = torch::jit::load(encoder);
+    //     decoderModule = torch::jit::load(decoder); //a regarder Torch::device / TorchOption
+    // } catch (const c10::Error& e) {
+    //     std::cerr << "Errors(s): " << e.what() << "\n";
+    //     return (1);
+    // }
+
+    AudioFile<double> audioFile;
+    audioFile.load(filename);
+
+    // std::string keyWord = std::filesystem::path(filename).filename();
+
+    audioFile.save(filename + "-compare.wav", AudioFileFormat::Wave);
+    audioFile.save(filename + "-transfert.wav", AudioFileFormat::Wave);
+    audioFile.save(filename + "-original.wav", AudioFileFormat::Wave);
 
     return (0);
 }
