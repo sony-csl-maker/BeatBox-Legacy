@@ -7,3 +7,13 @@ cmake --build . --config Release
 ```
 
 `./BeatboxGan --help`
+
+## How to compile and clean
+
+```
+cmake --build . --config Release
+```
+
+```
+cmake --build . --target clean
+```

@@ -2,6 +2,8 @@
 
 #include <torch/script.h>
 
+#include "AudioFile.hpp"
+
 #include <exception>
 #include <iostream>
 #include <memory>
@@ -11,6 +13,7 @@ int main(int ac, char **av)
     std::string filename;
     std::string outFolder;
     std::string encoder;
+    std::string decoder;
     float threshold;
     bool emphClasses;
     bool stroreSamples;
@@ -25,7 +28,9 @@ int main(int ac, char **av)
         description.add_options()
             ("out-folder", boost::program_options::value<std::string>(&outFolder)->default_value("output"), "out folder");
         description.add_options()
-            ("encoder", boost::program_options::value<std::string>(&encoder)->default_value("./encoderOlesia15_r50_4.p"), "path to the encoder");
+            ("encoder", boost::program_options::value<std::string>(&encoder)->default_value("../encoderOlesia15_r50_4.pt"), "path to the encoder");
+        description.add_options()
+            ("decoder", boost::program_options::value<std::string>(&decoder)->default_value("../gen_noattr_128.pt"), "path to the decoder");
         description.add_options()
             ("thresh", boost::program_options::value<float>(&threshold)->default_value(0.3), "peak picking threshold");
         description.add_options()
@@ -42,44 +47,20 @@ int main(int ac, char **av)
             return (0);
         }
 
-        if (vm.count("filename")) {
-            std::cout << filename << std::endl;
-        } else {
-            std::cout << "Filename was not set.\n";
-        }
-
-        if (vm.count("out-folder")) {
-            std::cout << outFolder << std::endl;
-        } else {
-            std::cout << "Out-folder was not set.\n";
-        }
-
-        if (vm.count("encoder")) {
-            std::cout << encoder << std::endl;
-        } else {
-            std::cout << "Encoder was not set.\n";
-        }
-
-        if (vm.count("thresh")) {
-            std::cout << threshold << std::endl;
-        } else {
-            std::cout << "Threshold was not set.\n";
-        }
-
-        if (vm.count("emph-classes")) {
-            std::cout << emphClasses << std::endl;
-        } else {
-            std::cout << "Emp-classes were not set.\n";
-        }
-
-        if (vm.count("strore-samples")) {
-            std::cout << stroreSamples << std::endl;
-        } else {
-            std::cout << "Store-samples was not set.\n";
-        }
     }
-    catch (std::exception &e)
+    catch (const std::exception &e)
     {
+        std::cerr << "Errors(s): " << e.what() << "\n";
+        return (1);
+    }
+
+    torch::jit::script::Module encoderModule;
+    torch::jit::script::Module decoderModule;
+
+    try {
+        encoderModule = torch::jit::load(encoder);
+        decoderModule = torch::jit::load(decoder);
+    } catch (const c10::Error& e) {
         std::cerr << "Errors(s): " << e.what() << "\n";
         return (1);
     }
