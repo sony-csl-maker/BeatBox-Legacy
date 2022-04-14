@@ -1,0 +1,3 @@
+/home/casimir/JUCE/beatbox/BeatboxGan/build/CMakeFiles/BeatboxGan.dir
+/home/casimir/JUCE/beatbox/BeatboxGan/build/CMakeFiles/edit_cache.dir
+/home/casimir/JUCE/beatbox/BeatboxGan/build/CMakeFiles/rebuild_cache.dir
