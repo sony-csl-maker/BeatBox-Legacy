@@ -1,3 +1,9 @@
+## Install dependencies
+
+`sudo apt-get install libboost-all-dev`
+
+`pip3 install torch-tensorrt -f https://github.com/NVIDIA/Torch-TensorRT/releases`
+
 ## How to build ?
 
 ```
