@@ -1,11 +1,14 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent()
+MainComponent::MainComponent() : _openButton("Click to choose a file")
 {
     // Make sure you set the size of the component after
     // you add any child components.
-    setSize (800, 600);
+    setSize (1000, 800);
+
+    _openButton.onClick = [this] {openButtonClicked();};
+    addAndMakeVisible(&_openButton);
 
     // Some platforms require permissions to open input channels so request that here
     if (juce::RuntimePermissions::isRequired (juce::RuntimePermissions::recordAudio)
@@ -25,6 +28,17 @@ MainComponent::~MainComponent()
 {
     // This shuts down the audio device and clears the audio source.
     shutdownAudio();
+}
+
+void MainComponent::openButtonClicked()
+{
+    juce::FileChooser chooser("Choose a Wav file", juce::File::getSpecialLocation(juce::File::userDesktopDirectory), "*.wav");
+
+    // if (chooser.browseForFileToOpen()) {
+    //     juce::File myFile;
+
+    //     myFile = chooser.getResult();
+    // }
 }
 
 //==============================================================================
@@ -72,4 +86,5 @@ void MainComponent::resized()
     // This is called when the MainContentComponent is resized.
     // If you add any child components, this is where you should
     // update their positions.
+    _openButton.setBounds(10, 10, getWidth() - 20, 30);
 }
