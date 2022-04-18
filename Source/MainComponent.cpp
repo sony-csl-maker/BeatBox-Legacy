@@ -9,6 +9,7 @@ MainComponent::MainComponent() : _openButton("Click to choose a file")
 
     _openButton.onClick = [this] {openButtonClicked();};
     addAndMakeVisible(&_openButton);
+    _formatManager.registerBasicFormats();
 
     // Some platforms require permissions to open input channels so request that here
     if (juce::RuntimePermissions::isRequired (juce::RuntimePermissions::recordAudio)
@@ -32,17 +33,49 @@ MainComponent::~MainComponent()
 
 void MainComponent::openButtonClicked()
 {
-    juce::FileChooser chooser("Choose a Wav file", juce::File::getSpecialLocation(juce::File::userDesktopDirectory), "*.wav");
+    shutdownAudio();
+    _fileChooser = std::make_unique<juce::FileChooser> ("Select a Wave file shorter than 2 seconds to play...",
+                                                       juce::File{},
+                                                       "*.wav");
 
-    if (chooser.browseForFileToOpen()) {
-        juce::File myFile;
+    // if (chooser.browseForFileToOpen()) {
+    //     juce::File myFile;
 
-        myFile = chooser.getResult();
-        DBG(myFile.getFullPathName());
+    //     myFile = chooser.getResult();
+    //     DBG(myFile.getFullPathName());
 
-        juce::AudioFormatReader *reader = _formatManager.createReaderFor(myFile);
-        std::unique_ptr<juce::AudioFormatReaderSource> tempSource (new juce::AudioFormatReaderSource (reader, true));
-    }
+    //     std::unique_ptr<juce::AudioFormatReader> reader (_formatManager.createReaderFor(myFile));
+    //     // std::unique_ptr<juce::AudioFormatReaderSource> tempSource (new juce::AudioFormatReaderSource (reader, true));
+    //     // juce::AudioSampleBuffer buffer(reader->numChannels, reader->lengthInSamples);
+    //     // auto duration = reader->lengthInSamples / reader->sampleRate;
+    //     // DBG(duration);
+
+    // }
+    auto chooserFlags = juce::FileBrowserComponent::openMode
+                      | juce::FileBrowserComponent::canSelectFiles;
+    _fileChooser->launchAsync (chooserFlags, [this] (const juce::FileChooser& fc)
+    {
+        auto file = fc.getResult();
+        DBG(file.getFileName());
+        if (file == juce::File{})
+            return;
+        std::unique_ptr<juce::AudioFormatReader> reader (_formatManager.createReaderFor (file)); // [2]
+        juce::AudioSampleBuffer buffer(reader->numChannels, reader->lengthInSamples);
+        if (reader.get() != nullptr)
+        {
+            auto duration = (float) reader->lengthInSamples / reader->sampleRate;
+            DBG((int) reader->numChannels);            // [3]
+            buffer.setSize ((int) reader->numChannels, (int) reader->lengthInSamples);  // [4]
+            reader->read (&buffer,                                                      // [5]
+                          0,                                                                //  [5.1]
+                          (int) reader->lengthInSamples,                                    //  [5.2]
+                          0,
+                          true,
+                          true);
+            DBG((float) buffer.getSample(0, 400));
+            setAudioChannels (0, (int) reader->numChannels);
+        }
+    });
 }
 
 //==============================================================================
