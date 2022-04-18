@@ -72,7 +72,8 @@ void MainComponent::openButtonClicked()
                           0,
                           true,
                           true);
-            DBG((float) buffer.getSample(0, 400));
+            DBG((float) buffer.getSample(1, 400));
+            DBG(reader->lengthInSamples);
             setAudioChannels (0, (int) reader->numChannels);
         }
     });
