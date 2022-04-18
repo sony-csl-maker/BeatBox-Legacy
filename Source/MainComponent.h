@@ -29,6 +29,7 @@ private:
 
     juce::TextButton _openButton;
     void openButtonClicked(void);
+    juce::AudioFormatManager _formatManager;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)

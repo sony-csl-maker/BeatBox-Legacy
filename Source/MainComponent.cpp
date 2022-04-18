@@ -34,11 +34,15 @@ void MainComponent::openButtonClicked()
 {
     juce::FileChooser chooser("Choose a Wav file", juce::File::getSpecialLocation(juce::File::userDesktopDirectory), "*.wav");
 
-    // if (chooser.browseForFileToOpen()) {
-    //     juce::File myFile;
+    if (chooser.browseForFileToOpen()) {
+        juce::File myFile;
 
-    //     myFile = chooser.getResult();
-    // }
+        myFile = chooser.getResult();
+        DBG(myFile.getFullPathName());
+
+        juce::AudioFormatReader *reader = _formatManager.createReaderFor(myFile);
+        std::unique_ptr<juce::AudioFormatReaderSource> tempSource (new juce::AudioFormatReaderSource (reader, true));
+    }
 }
 
 //==============================================================================
