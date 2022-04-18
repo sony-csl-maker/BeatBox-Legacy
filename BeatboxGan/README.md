@@ -1,3 +1,5 @@
+# BeatboxGAN
+
 ## Install dependencies
 
 `sudo apt-get install libboost-all-dev`
@@ -14,7 +16,7 @@ cmake --build . --config Release
 
 `./BeatboxGan --help`
 
-## How to compile and clean
+## How to compile and clean (using cmake)
 
 ```
 cmake --build . --config Release

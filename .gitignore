@@ -39,3 +39,11 @@
 # Beatbox Project Files
 *.pt
 *.wav
+.gitignore
+beatbox.jucer
+BeatboxGan/build/BeatboxGan
+BeatboxGan/build/CMakeCache.txt
+BeatboxGan/build/CMakeFiles/
+BeatboxGan/build/Makefile
+BeatboxGan/build/cmake_install.cmake
+Builds/LinuxMakefile/build/
