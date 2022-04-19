@@ -75,19 +75,32 @@ int main(int ac, char **av)
     AudioFile<double> audioFile;
     audioFile.load(filename);
 
-    std::cout << "Bit Depth: " << audioFile.getBitDepth() << std::endl;
-    std::cout << "Sample Rate: " << audioFile.getSampleRate() << std::endl;
-    std::cout << "Length in Seconds: " << audioFile.getLengthInSeconds() << std::endl;
+    // std::cout << "Bit Depth: " << audioFile.getBitDepth() << std::endl;
+    // std::cout << "Sample Rate: " << audioFile.getSampleRate() << std::endl;
+    // std::cout << "Sample Number: " << audioFile.getNumSamplesPerChannel() << std::endl;
+    // std::cout << "Length in Seconds: " << audioFile.getLengthInSeconds() << std::endl;
     std::cout << std::endl;
 
-    std::string keyWord = std::filesystem::path(filename).filename();
+    int channel = 0;
+    int numSamples = audioFile.getNumSamplesPerChannel();
+    int i = 0;
 
-    boost::filesystem::create_directory(outFolder);
-    outFolder.append("/");
+    std::vector<double> samplesValues;
+    std::cout << "CurrentSamples: " << std::endl;
 
-    audioFile.save(outFolder + keyWord + "-compare.wav", AudioFileFormat::Wave);
-    audioFile.save(outFolder + keyWord + "-transfert.wav", AudioFileFormat::Wave);
-    audioFile.save(outFolder + keyWord + "-original.wav", AudioFileFormat::Wave);
+    for (i = 0; i < 500; i++) {
+    	double currentSample = audioFile.samples[channel][i];
+        std::cout << audioFile.samples[channel][i] << std::endl;
+    }
+
+    // std::string keyWord = std::filesystem::path(filename).filename();
+
+    // boost::filesystem::create_directory(outFolder);
+    // outFolder.append("/");
+
+    // audioFile.save(outFolder + keyWord + "-compare.wav", AudioFileFormat::Wave);
+    // audioFile.save(outFolder + keyWord + "-transfert.wav", AudioFileFormat::Wave);
+    // audioFile.save(outFolder + keyWord + "-original.wav", AudioFileFormat::Wave);
 
     return (0);
 }

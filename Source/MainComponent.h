@@ -87,7 +87,10 @@ private:
 
             if (file != juce::File{})
             {
+
                 auto* reader = _formatManager.createReaderFor (file);
+
+                juce::AudioSampleBuffer buffer(reader->numChannels, reader->lengthInSamples);
 
                 if (reader != nullptr)
                 {
@@ -95,6 +98,18 @@ private:
                     _transportSource.setSource (newSource.get(), 0, nullptr, reader->sampleRate);
                     _playButton.setEnabled (true);
                     _readerSource.reset (newSource.release());
+
+                    buffer.setSize ((int) reader->numChannels, (int) reader->lengthInSamples);
+                    reader->read (&buffer,
+                          0,
+                          (int) reader->lengthInSamples,
+                          0,
+                          true,
+                          true);
+
+                    for (int index = 0; index < buffer.getNumSamples(); index += 1) {
+                        DBG((float) buffer.getSample(0, index));
+                    }
                 }
             }
         });
@@ -124,6 +139,8 @@ private:
     juce::Label _currentPositionLabel;
 
     std::unique_ptr<juce::FileChooser> _fileChooser;
+
+    juce::AudioSampleBuffer _buffer;
 
     juce::AudioFormatManager _formatManager;
     std::unique_ptr<juce::AudioFormatReaderSource> _readerSource;
