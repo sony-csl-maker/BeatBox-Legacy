@@ -1,28 +1,38 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent() : _openButton("Click to choose a file")
+MainComponent::MainComponent()
+    : _state(Stopped)
 {
-    // Make sure you set the size of the component after
-    // you add any child components.
-    setSize (1000, 800);
-
-    _openButton.onClick = [this] {openButtonClicked();};
     addAndMakeVisible(&_openButton);
-    _formatManager.registerBasicFormats();
+    _openButton.setButtonText("Open from filesystem ...");
+    _openButton.onClick = [this]
+    { openButtonClicked(); };
 
-    // Some platforms require permissions to open input channels so request that here
-    if (juce::RuntimePermissions::isRequired (juce::RuntimePermissions::recordAudio)
-        && ! juce::RuntimePermissions::isGranted (juce::RuntimePermissions::recordAudio))
-    {
-        juce::RuntimePermissions::request (juce::RuntimePermissions::recordAudio,
-                                           [&] (bool granted) { setAudioChannels (granted ? 2 : 0, 2); });
-    }
-    else
-    {
-        // Specify the number of input and output channels that we want to open
-        setAudioChannels (2, 2);
-    }
+    addAndMakeVisible(&_playButton);
+    _playButton.setButtonText("Play");
+    _playButton.onClick = [this]
+    { playButtonClicked(); };
+    _playButton.setColour(juce::TextButton::buttonColourId, juce::Colours::green);
+    _playButton.setEnabled(false);
+
+    addAndMakeVisible(&_stopButton);
+    _stopButton.setButtonText("Stop");
+    _stopButton.onClick = [this]
+    { stopButtonClicked(); };
+    _stopButton.setColour(juce::TextButton::buttonColourId, juce::Colours::red);
+    _stopButton.setEnabled(false);
+
+    addAndMakeVisible(&_currentPositionLabel);
+    _currentPositionLabel.setText("Stopped", juce::dontSendNotification);
+
+    setSize(1000, 800);
+
+    _formatManager.registerBasicFormats();
+    _transportSource.addChangeListener(this);
+
+    setAudioChannels(2, 2);
+    startTimer (20);
 }
 
 MainComponent::~MainComponent()
@@ -31,55 +41,8 @@ MainComponent::~MainComponent()
     shutdownAudio();
 }
 
-void MainComponent::openButtonClicked()
-{
-    shutdownAudio();
-    _fileChooser = std::make_unique<juce::FileChooser> ("Select a Wave file shorter than 2 seconds to play...",
-                                                       juce::File{},
-                                                       "*.wav");
-
-    // if (chooser.browseForFileToOpen()) {
-    //     juce::File myFile;
-
-    //     myFile = chooser.getResult();
-    //     DBG(myFile.getFullPathName());
-
-    //     std::unique_ptr<juce::AudioFormatReader> reader (_formatManager.createReaderFor(myFile));
-    //     // std::unique_ptr<juce::AudioFormatReaderSource> tempSource (new juce::AudioFormatReaderSource (reader, true));
-    //     // juce::AudioSampleBuffer buffer(reader->numChannels, reader->lengthInSamples);
-    //     // auto duration = reader->lengthInSamples / reader->sampleRate;
-    //     // DBG(duration);
-
-    // }
-    auto chooserFlags = juce::FileBrowserComponent::openMode
-                      | juce::FileBrowserComponent::canSelectFiles;
-    _fileChooser->launchAsync (chooserFlags, [this] (const juce::FileChooser& fc)
-    {
-        auto file = fc.getResult();
-        DBG(file.getFileName());
-        if (file == juce::File{})
-            return;
-        std::unique_ptr<juce::AudioFormatReader> reader (_formatManager.createReaderFor (file)); // [2]
-        juce::AudioSampleBuffer buffer(reader->numChannels, reader->lengthInSamples);
-        if (reader.get() != nullptr)
-        {
-            auto duration = (float) reader->lengthInSamples / reader->sampleRate;
-            DBG((int) reader->numChannels);            // [3]
-            buffer.setSize ((int) reader->numChannels, (int) reader->lengthInSamples);  // [4]
-            reader->read (&buffer,                                                      // [5]
-                          0,                                                                //  [5.1]
-                          (int) reader->lengthInSamples,                                    //  [5.2]
-                          0,
-                          true,
-                          true);
-            DBG((float) buffer.getSample(0, 400));
-            setAudioChannels (0, (int) reader->numChannels);
-        }
-    });
-}
-
 //==============================================================================
-void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
+void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
     // This function will be called when the audio device is started, or when
     // its settings (i.e. sample rate, block size, etc) are changed.
@@ -88,9 +51,10 @@ void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRat
     // but be careful - it will be called on the audio thread, not the GUI thread.
 
     // For more details, see the help for AudioProcessor::prepareToPlay()
+    _transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
 
-void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
+void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill)
 {
     // Your audio-processing code goes here!
 
@@ -98,7 +62,13 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 
     // Right now we are not producing any data, in which case we need to clear the buffer
     // (to prevent the output of random noise)
-    bufferToFill.clearActiveBufferRegion();
+    if (_readerSource.get() == nullptr)
+    {
+        bufferToFill.clearActiveBufferRegion();
+        return;
+    }
+
+    _transportSource.getNextAudioBlock(bufferToFill);
 }
 
 void MainComponent::releaseResources()
@@ -107,21 +77,54 @@ void MainComponent::releaseResources()
     // restarted due to a setting change.
 
     // For more details, see the help for AudioProcessor::releaseResources()
+    _transportSource.releaseResources();
 }
 
 //==============================================================================
-void MainComponent::paint (juce::Graphics& g)
+void MainComponent::paint(juce::Graphics &g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    // You can add your drawing code here!
+    g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 }
 
 void MainComponent::resized()
 {
-    // This is called when the MainContentComponent is resized.
+    // This is called when the MainComponent is resized.
     // If you add any child components, this is where you should
     // update their positions.
-    _openButton.setBounds(10, 10, getWidth() - 20, 30);
+    _openButton.setBounds(10, 10, getWidth() - 20, 20);
+    _playButton.setBounds(10, 40, getWidth() - 20, 20);
+    _stopButton.setBounds(10, 70, getWidth() - 20, 20);
+    _currentPositionLabel.setBounds(10, 130, getWidth() - 20, 20);
+}
+
+void MainComponent::timerCallback()
+{
+    if (_transportSource.isPlaying())
+    {
+        juce::RelativeTime position(_transportSource.getCurrentPosition());
+
+        auto minutes = ((int)position.inMinutes()) % 60;
+        auto seconds = ((int)position.inSeconds()) % 60;
+        auto millis = ((int)position.inMilliseconds()) % 1000;
+
+        auto positionString = juce::String::formatted("%02d:%02d:%03d", minutes, seconds, millis);
+
+        _currentPositionLabel.setText(positionString, juce::dontSendNotification);
+    }
+    else
+    {
+        _currentPositionLabel.setText("Paused", juce::dontSendNotification);
+    }
+}
+
+void MainComponent::changeListenerCallback(juce::ChangeBroadcaster *source)
+{
+    if (source == &_transportSource)
+    {
+        if (_transportSource.isPlaying())
+            changeState(Playing);
+        else
+            changeState(Stopped);
+    }
 }
