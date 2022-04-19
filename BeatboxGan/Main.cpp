@@ -3,7 +3,7 @@
 
 #include <torch/script.h>
 
-#include "AudioFile.hpp"
+#include "audiofile/AudioFile.hpp"
 
 #include <exception>
 #include <iostream>
@@ -74,6 +74,11 @@ int main(int ac, char **av)
 
     AudioFile<double> audioFile;
     audioFile.load(filename);
+
+    std::cout << "Bit Depth: " << audioFile.getBitDepth() << std::endl;
+    std::cout << "Sample Rate: " << audioFile.getSampleRate() << std::endl;
+    std::cout << "Length in Seconds: " << audioFile.getLengthInSeconds() << std::endl;
+    std::cout << std::endl;
 
     std::string keyWord = std::filesystem::path(filename).filename();
 
