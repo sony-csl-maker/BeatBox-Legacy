@@ -111,21 +111,17 @@ private:
                     int prevSampleIndex = 0;
                     int sampleIndex = (int)reader->sampleRate / 100;
 
-                    // _prevMagnitudeSpectrum_spectralDifference.resize((int)reader->sampleRate);
-                    // for (int index = 0; index < (int)reader->sampleRate / 100; index += 1) {
-                    //     _prevMagnitudeSpectrum_spectralDifference[index] = 0.0;
-                    // }
-                    int frameSize = (int)reader->sampleRate / 100;
+                    int frameSize = 441;
                     int sampleRate = 44100;
                     Gist<float> gist(frameSize, sampleRate);
 
                     for (int index = 0; index < buffer.getNumSamples(); index += 1) {
-                        if (index % (int)reader->sampleRate / 100 == 0) {
+                        if (index % frameSize == 0) {
                             std::vector<float> sample(_audioTimeSeries.begin() + prevSampleIndex, _audioTimeSeries.begin() + sampleIndex);
                             gist.processAudioFrame(sample);
                             _onsets.push_back(gist.energyDifference());
-                            prevSampleIndex += (int)reader->sampleRate / 100;
-                            sampleIndex += (int)reader->sampleRate / 100;
+                            prevSampleIndex += frameSize;
+                            sampleIndex += frameSize;
                         }
                     }
 
@@ -151,31 +147,6 @@ private:
     //     _preEnergySum = sum;
 
     //     return ((difference > 0) ? difference : 0.0);
-    // }
-
-    // float OnsetDetectionFunction(const std::vector<float> magnitudeSpectrum)
-    // {
-    //     float sum = 0; // initialise sum to zero
-
-    //     for (size_t i = 0; i < magnitudeSpectrum.size(); i++)
-    //     {
-    //         // calculate difference
-    //         float diff = magnitudeSpectrum[i] - _prevMagnitudeSpectrum_spectralDifference[i];
-
-    //         // ensure all difference values are positive
-    //         if (diff < 0)
-    //         {
-    //             diff = diff * -1;
-    //         }
-
-    //         // add difference to sum
-    //         sum = sum + diff;
-
-    //         // store the sample for next time
-    //         _prevMagnitudeSpectrum_spectralDifference[i] = magnitudeSpectrum[i];
-    //     }
-
-    //     return sum;
     // }
 
     void playButtonClicked()
@@ -207,7 +178,6 @@ private:
     std::vector<float> _onsets;
 
     float _preEnergySum = 0.0;
-    std::vector<float> _prevMagnitudeSpectrum_spectralDifference;
 
     juce::AudioFormatManager _formatManager;
     std::unique_ptr<juce::AudioFormatReaderSource> _readerSource;

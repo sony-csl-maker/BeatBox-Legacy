@@ -29,7 +29,7 @@
 #include <cmath>
 
 /** template class for calculating onset detection functions
- * Instantiations of the class should be of either 'float' or 
+ * Instantiations of the class should be of either 'float' or
  * 'double' types and no others */
 template <class T>
 class OnsetDetectionFunction
