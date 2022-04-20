@@ -2,6 +2,8 @@
 
 #include <JuceHeader.h>
 
+#include "Gist.h"
+
 //==============================================================================
 /*
     This component lives inside our window, and this is where you should put all
@@ -113,12 +115,15 @@ private:
                     // for (int index = 0; index < (int)reader->sampleRate / 100; index += 1) {
                     //     _prevMagnitudeSpectrum_spectralDifference[index] = 0.0;
                     // }
+                    int frameSize = (int)reader->sampleRate / 100;
+                    int sampleRate = 44100;
+                    Gist<float> gist(frameSize, sampleRate);
 
                     for (int index = 0; index < buffer.getNumSamples(); index += 1) {
-
                         if (index % (int)reader->sampleRate / 100 == 0) {
                             std::vector<float> sample(_audioTimeSeries.begin() + prevSampleIndex, _audioTimeSeries.begin() + sampleIndex);
-                            _onsets.push_back(OnsetDetectionFunction(sample));
+                            gist.processAudioFrame(sample);
+                            _onsets.push_back(gist.energyDifference());
                             prevSampleIndex += (int)reader->sampleRate / 100;
                             sampleIndex += (int)reader->sampleRate / 100;
                         }
@@ -130,23 +135,23 @@ private:
             } });
     }
 
-    float OnsetDetectionFunction(const std::vector<float> buffer)
-    {
-        float sum;
-        float difference;
+    // float OnsetDetectionFunction(const std::vector<float> buffer)
+    // {
+    //     float sum;
+    //     float difference;
 
-        sum = 0;
+    //     sum = 0;
 
-        for (size_t i = 0; i < buffer.size(); i += 1) {
-            sum = sum + (buffer[i] * buffer[i]);
-        }
+    //     for (size_t i = 0; i < buffer.size(); i += 1) {
+    //         sum = sum + (buffer[i] * buffer[i]);
+    //     }
 
-        difference = sum - _preEnergySum;
+    //     difference = sum - _preEnergySum;
 
-        _preEnergySum = sum;
+    //     _preEnergySum = sum;
 
-        return ((difference > 0) ? difference : 0.0);
-    }
+    //     return ((difference > 0) ? difference : 0.0);
+    // }
 
     // float OnsetDetectionFunction(const std::vector<float> magnitudeSpectrum)
     // {
