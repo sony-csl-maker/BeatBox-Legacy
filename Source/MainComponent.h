@@ -1,7 +1,12 @@
 #pragma once
 
+// Juce
 #include <JuceHeader.h>
 
+// std
+#include <utility>
+
+// gist
 #include "Gist.h"
 
 //==============================================================================
@@ -130,23 +135,49 @@ private:
 
 
                     findPeaks(_onsets);
+                    for (int index = 0; index < _peaks.size() - 1; index += 1)
+                        _peaks[index] *= 441;
+                    findStartEndOnset(_audioTimeSeries, _peaks);
+                    transferTrack(_startEnd);
 
-                    for (int index = 0; index < _peaksValues.size(); index += 1)
-                        std::cout << _peaksValues.at(index) << std::endl;
+                    for (auto it : _samplesTab) {
+                        std::cout << "Sample :" << it.size() << std::endl;
+                    }
+
+
                 }
             } });
     }
 
-    void findPeaks(std::vector<float> _onsets)
+    void findPeaks(std::vector<float> onsets)
     {
         float last_peak = -1e10;
 
-        for (int index = 0; index < _onsets.size() -1; index++) {
-            if ((_onsets[index] > _onsets[index + 1]) && (_onsets[index] > _onsets[index - 1]) && (index - last_peak > 0)) {
+        for (int index = 0; index < onsets.size() -1; index++) {
+            if ((_onsets[index] > onsets[index + 1]) && (onsets[index] > onsets[index - 1]) && (index - last_peak > 0)) {
                 _peaks.push_back(index);
-                _peaksValues.push_back(_onsets[index]);
+                _peaksValues.push_back(onsets[index]);
                 last_peak = index;
             }
+        }
+    }
+
+    void findStartEndOnset(std::vector<float> audio, std::vector<float> onsetPeaks)
+    {
+        int length = 24575;
+
+        for (int index = 0; index < onsetPeaks.size() - 1; index++) {
+            if ((onsetPeaks[index] + length) < audio.size()) {
+                _startEnd.push_back({onsetPeaks[index], onsetPeaks[index] + length});
+            }
+        }
+    }
+
+    void transferTrack(std::vector<std::pair<float, float>> startEnd)
+    {
+        for (auto it : startEnd) {
+            std::vector<float> sample(_audioTimeSeries.begin() + it.first, _audioTimeSeries.begin() + it.second);
+            _samplesTab.push_back(sample);
         }
     }
 
@@ -179,6 +210,10 @@ private:
     std::vector<float> _onsets;
     std::vector<float> _peaks;
     std::vector<float> _peaksValues;
+
+    std::vector<std::pair<float, float>> _startEnd;
+
+    std::vector<std::vector<float>> _samplesTab;
 
     float _preEnergySum = 0.0;
 
