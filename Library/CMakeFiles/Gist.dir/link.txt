@@ -1,2 +1,6 @@
+<<<<<<< HEAD
 /usr/bin/ar qc libGist.a CMakeFiles/Gist.dir/AccelerateFFT.o CMakeFiles/Gist.dir/CoreFrequencyDomainFeatures.o CMakeFiles/Gist.dir/CoreTimeDomainFeatures.o CMakeFiles/Gist.dir/Gist.o CMakeFiles/Gist.dir/MFCC.o CMakeFiles/Gist.dir/OnsetDetectionFunction.o CMakeFiles/Gist.dir/WindowFunctions.o CMakeFiles/Gist.dir/Yin.o
+=======
+/usr/bin/ar qc libGist.a CMakeFiles/Gist.dir/AccelerateFFT.cpp.o CMakeFiles/Gist.dir/CoreFrequencyDomainFeatures.cpp.o CMakeFiles/Gist.dir/CoreTimeDomainFeatures.cpp.o CMakeFiles/Gist.dir/Gist.cpp.o CMakeFiles/Gist.dir/MFCC.cpp.o CMakeFiles/Gist.dir/OnsetDetectionFunction.cpp.o CMakeFiles/Gist.dir/WindowFunctions.cpp.o CMakeFiles/Gist.dir/Yin.cpp.o
+>>>>>>> [FIX] not sure of this commit a lot a file added an ddeleted
 /usr/bin/ranlib libGist.a

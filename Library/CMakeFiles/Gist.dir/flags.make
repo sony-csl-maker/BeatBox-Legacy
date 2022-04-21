@@ -4,7 +4,13 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = -DUSE_KISS_FFT
 
+<<<<<<< HEAD
 CXX_INCLUDES = -I/home/maxime/JUCE/beatbox/Library/src -I/home/maxime/JUCE/beatbox/Library/../libs/kiss_fft130
 
 CXX_FLAGS = 
+=======
+CXX_INCLUDES = -I/home/casimir/Downloads/Gist-master/src/src -I/home/casimir/Downloads/Gist-master/src/../libs/kiss_fft130
+
+CXX_FLAGS = -std=gnu++11
+>>>>>>> [FIX] not sure of this commit a lot a file added an ddeleted
 

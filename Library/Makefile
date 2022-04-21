@@ -57,10 +57,17 @@ RM = /snap/cmake/1082/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
+<<<<<<< HEAD
 CMAKE_SOURCE_DIR = /home/maxime/JUCE/beatbox/Library
 
 # The top-level build directory on which CMake was run.
 CMAKE_BINARY_DIR = /home/maxime/JUCE/beatbox/Library
+=======
+CMAKE_SOURCE_DIR = /home/casimir/Downloads/Gist-master
+
+# The top-level build directory on which CMake was run.
+CMAKE_BINARY_DIR = /home/casimir/Downloads/Gist-master
+>>>>>>> [FIX] not sure of this commit a lot a file added an ddeleted
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -86,15 +93,26 @@ rebuild_cache/fast: rebuild_cache
 .PHONY : rebuild_cache/fast
 
 # The main all target
+<<<<<<< HEAD
 all: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/maxime/JUCE/beatbox/Library/CMakeFiles /home/maxime/JUCE/beatbox/Library//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/maxime/JUCE/beatbox/Library/CMakeFiles 0
+=======
+all:
+	cd /home/casimir/Downloads/Gist-master && $(CMAKE_COMMAND) -E cmake_progress_start /home/casimir/Downloads/Gist-master/CMakeFiles /home/casimir/Downloads/Gist-master/src//CMakeFiles/progress.marks
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/casimir/Downloads/Gist-master/CMakeFiles 0
+>>>>>>> [FIX] not sure of this commit a lot a file added an ddeleted
 .PHONY : all
 
 # The main clean target
 clean:
+<<<<<<< HEAD
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 clean
+=======
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/clean
+>>>>>>> [FIX] not sure of this commit a lot a file added an ddeleted
 .PHONY : clean
 
 # The main clean target
@@ -103,11 +121,16 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
+<<<<<<< HEAD
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 preinstall
+=======
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/preinstall
+>>>>>>> [FIX] not sure of this commit a lot a file added an ddeleted
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
+<<<<<<< HEAD
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 preinstall
 .PHONY : preinstall/fast
 
@@ -122,10 +145,23 @@ depend:
 # Build rule for target.
 Gist: cmake_check_build_system
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Gist
+=======
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/preinstall
+.PHONY : preinstall/fast
+
+# Convenience name for target.
+src/CMakeFiles/Gist.dir/rule:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/CMakeFiles/Gist.dir/rule
+.PHONY : src/CMakeFiles/Gist.dir/rule
+
+# Convenience name for target.
+Gist: src/CMakeFiles/Gist.dir/rule
+>>>>>>> [FIX] not sure of this commit a lot a file added an ddeleted
 .PHONY : Gist
 
 # fast build rule for target.
 Gist/fast:
+<<<<<<< HEAD
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Gist.dir/build.make CMakeFiles/Gist.dir/build
 .PHONY : Gist/fast
 
@@ -249,12 +285,212 @@ Yin.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Gist.dir/build.make CMakeFiles/Gist.dir/Yin.s
 .PHONY : Yin.s
 
+=======
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/build
+.PHONY : Gist/fast
+
+AccelerateFFT.o: AccelerateFFT.cpp.o
+.PHONY : AccelerateFFT.o
+
+# target to build an object file
+AccelerateFFT.cpp.o:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/AccelerateFFT.cpp.o
+.PHONY : AccelerateFFT.cpp.o
+
+AccelerateFFT.i: AccelerateFFT.cpp.i
+.PHONY : AccelerateFFT.i
+
+# target to preprocess a source file
+AccelerateFFT.cpp.i:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/AccelerateFFT.cpp.i
+.PHONY : AccelerateFFT.cpp.i
+
+AccelerateFFT.s: AccelerateFFT.cpp.s
+.PHONY : AccelerateFFT.s
+
+# target to generate assembly for a file
+AccelerateFFT.cpp.s:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/AccelerateFFT.cpp.s
+.PHONY : AccelerateFFT.cpp.s
+
+CoreFrequencyDomainFeatures.o: CoreFrequencyDomainFeatures.cpp.o
+.PHONY : CoreFrequencyDomainFeatures.o
+
+# target to build an object file
+CoreFrequencyDomainFeatures.cpp.o:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/CoreFrequencyDomainFeatures.cpp.o
+.PHONY : CoreFrequencyDomainFeatures.cpp.o
+
+CoreFrequencyDomainFeatures.i: CoreFrequencyDomainFeatures.cpp.i
+.PHONY : CoreFrequencyDomainFeatures.i
+
+# target to preprocess a source file
+CoreFrequencyDomainFeatures.cpp.i:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/CoreFrequencyDomainFeatures.cpp.i
+.PHONY : CoreFrequencyDomainFeatures.cpp.i
+
+CoreFrequencyDomainFeatures.s: CoreFrequencyDomainFeatures.cpp.s
+.PHONY : CoreFrequencyDomainFeatures.s
+
+# target to generate assembly for a file
+CoreFrequencyDomainFeatures.cpp.s:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/CoreFrequencyDomainFeatures.cpp.s
+.PHONY : CoreFrequencyDomainFeatures.cpp.s
+
+CoreTimeDomainFeatures.o: CoreTimeDomainFeatures.cpp.o
+.PHONY : CoreTimeDomainFeatures.o
+
+# target to build an object file
+CoreTimeDomainFeatures.cpp.o:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/CoreTimeDomainFeatures.cpp.o
+.PHONY : CoreTimeDomainFeatures.cpp.o
+
+CoreTimeDomainFeatures.i: CoreTimeDomainFeatures.cpp.i
+.PHONY : CoreTimeDomainFeatures.i
+
+# target to preprocess a source file
+CoreTimeDomainFeatures.cpp.i:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/CoreTimeDomainFeatures.cpp.i
+.PHONY : CoreTimeDomainFeatures.cpp.i
+
+CoreTimeDomainFeatures.s: CoreTimeDomainFeatures.cpp.s
+.PHONY : CoreTimeDomainFeatures.s
+
+# target to generate assembly for a file
+CoreTimeDomainFeatures.cpp.s:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/CoreTimeDomainFeatures.cpp.s
+.PHONY : CoreTimeDomainFeatures.cpp.s
+
+Gist.o: Gist.cpp.o
+.PHONY : Gist.o
+
+# target to build an object file
+Gist.cpp.o:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/Gist.cpp.o
+.PHONY : Gist.cpp.o
+
+Gist.i: Gist.cpp.i
+.PHONY : Gist.i
+
+# target to preprocess a source file
+Gist.cpp.i:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/Gist.cpp.i
+.PHONY : Gist.cpp.i
+
+Gist.s: Gist.cpp.s
+.PHONY : Gist.s
+
+# target to generate assembly for a file
+Gist.cpp.s:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/Gist.cpp.s
+.PHONY : Gist.cpp.s
+
+MFCC.o: MFCC.cpp.o
+.PHONY : MFCC.o
+
+# target to build an object file
+MFCC.cpp.o:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/MFCC.cpp.o
+.PHONY : MFCC.cpp.o
+
+MFCC.i: MFCC.cpp.i
+.PHONY : MFCC.i
+
+# target to preprocess a source file
+MFCC.cpp.i:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/MFCC.cpp.i
+.PHONY : MFCC.cpp.i
+
+MFCC.s: MFCC.cpp.s
+.PHONY : MFCC.s
+
+# target to generate assembly for a file
+MFCC.cpp.s:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/MFCC.cpp.s
+.PHONY : MFCC.cpp.s
+
+OnsetDetectionFunction.o: OnsetDetectionFunction.cpp.o
+.PHONY : OnsetDetectionFunction.o
+
+# target to build an object file
+OnsetDetectionFunction.cpp.o:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/OnsetDetectionFunction.cpp.o
+.PHONY : OnsetDetectionFunction.cpp.o
+
+OnsetDetectionFunction.i: OnsetDetectionFunction.cpp.i
+.PHONY : OnsetDetectionFunction.i
+
+# target to preprocess a source file
+OnsetDetectionFunction.cpp.i:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/OnsetDetectionFunction.cpp.i
+.PHONY : OnsetDetectionFunction.cpp.i
+
+OnsetDetectionFunction.s: OnsetDetectionFunction.cpp.s
+.PHONY : OnsetDetectionFunction.s
+
+# target to generate assembly for a file
+OnsetDetectionFunction.cpp.s:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/OnsetDetectionFunction.cpp.s
+.PHONY : OnsetDetectionFunction.cpp.s
+
+WindowFunctions.o: WindowFunctions.cpp.o
+.PHONY : WindowFunctions.o
+
+# target to build an object file
+WindowFunctions.cpp.o:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/WindowFunctions.cpp.o
+.PHONY : WindowFunctions.cpp.o
+
+WindowFunctions.i: WindowFunctions.cpp.i
+.PHONY : WindowFunctions.i
+
+# target to preprocess a source file
+WindowFunctions.cpp.i:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/WindowFunctions.cpp.i
+.PHONY : WindowFunctions.cpp.i
+
+WindowFunctions.s: WindowFunctions.cpp.s
+.PHONY : WindowFunctions.s
+
+# target to generate assembly for a file
+WindowFunctions.cpp.s:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/WindowFunctions.cpp.s
+.PHONY : WindowFunctions.cpp.s
+
+Yin.o: Yin.cpp.o
+.PHONY : Yin.o
+
+# target to build an object file
+Yin.cpp.o:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/Yin.cpp.o
+.PHONY : Yin.cpp.o
+
+Yin.i: Yin.cpp.i
+.PHONY : Yin.i
+
+# target to preprocess a source file
+Yin.cpp.i:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/Yin.cpp.i
+.PHONY : Yin.cpp.i
+
+Yin.s: Yin.cpp.s
+.PHONY : Yin.s
+
+# target to generate assembly for a file
+Yin.cpp.s:
+	cd /home/casimir/Downloads/Gist-master && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/Gist.dir/build.make src/CMakeFiles/Gist.dir/Yin.cpp.s
+.PHONY : Yin.cpp.s
+
+>>>>>>> [FIX] not sure of this commit a lot a file added an ddeleted
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
+<<<<<<< HEAD
 	@echo "... depend"
+=======
+>>>>>>> [FIX] not sure of this commit a lot a file added an ddeleted
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... Gist"
@@ -284,6 +520,7 @@ help:
 	@echo "... Yin.s"
 .PHONY : help
 
+<<<<<<< HEAD
 
 
 #=============================================================================
@@ -295,4 +532,10 @@ help:
 cmake_check_build_system:
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
+=======
+
+
+#=============================================================================
+# Special targets to cleanup operation of make.
+>>>>>>> [FIX] not sure of this commit a lot a file added an ddeleted
 
