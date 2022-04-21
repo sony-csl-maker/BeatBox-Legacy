@@ -108,22 +108,46 @@ private:
                     for (int index = 0; index < buffer.getNumSamples(); index += 1)
                         _audioTimeSeries.push_back(buffer.getSample(0, index));
 
-                    int prevSampleIndex = 0;
-                    int sampleIndex = (int)reader->sampleRate / 100;
+                    // int prevSampleIndex = 0;
+                    // int sampleIndex = (int)reader->sampleRate / 100;
 
-                    int frameSize = 441;
+                    int frameSize = 512;
                     int sampleRate = 44100;
                     Gist<float> gist(frameSize, sampleRate);
 
-                    for (int index = 0; index < buffer.getNumSamples(); index += 1) {
-                        if (index % frameSize == 0) {
-                            std::vector<float> sample(_audioTimeSeries.begin() + prevSampleIndex, _audioTimeSeries.begin() + sampleIndex);
-                            gist.processAudioFrame(sample);
-                            _onsets.push_back(gist.energyDifference());
-                            prevSampleIndex += frameSize;
-                            sampleIndex += frameSize;
+                    for (int index = 0; index < buffer.getNumSamples(); index += 512) {
+
+                        std::vector<float> audioFrame;
+
+                        for (int j = 0; j < 512; j++) {
+                            audioFrame[j] = buffer.getSample(0, index + j);
                         }
+
+                        gist.processAudioFrame (audioFrame);
+
+                        float energyDifference = gist.energyDifference();
+
+                        _onsets.push_back(energyDifference);
                     }
+
+                    // std::vector<double> fullTrackAudio;
+                    // std::vector<double> onsetDetectionFunction;
+
+                    // for (int i = 0; i < fullTrackAudio.size(); i += 512)
+                    // {
+                    //     std::vector<double> audioFrame;
+
+                    //     for (int j = 0; j < 512; j++)
+                    //     {
+                    //         audioFrame[j] = fullTrackAudio[i + j];
+                    //     }
+
+                    //     gist.processAudioFrame (audioFrame);
+                    //     double energyDifference = gist.energyDifference();
+                    //     onsetDetectionFunction.push_back (energyDifference);
+                    // }
+
+
 
                     for (int index = 0; index < _onsets.size(); index += 1)
                         std::cout << _onsets.at(index) << std::endl;
