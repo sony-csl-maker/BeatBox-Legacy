@@ -108,70 +108,47 @@ private:
                     for (int index = 0; index < buffer.getNumSamples(); index += 1)
                         _audioTimeSeries.push_back(buffer.getSample(0, index));
 
-                    // int prevSampleIndex = 0;
-                    // int sampleIndex = (int)reader->sampleRate / 100;
 
-                    int frameSize = 512;
+                    int prevSampleIndex = 0;
+                    int sampleIndex = (int)reader->sampleRate / 100;
+
+
+                    int frameSize = (int)reader->sampleRate / 100;
                     int sampleRate = 44100;
                     Gist<float> gist(frameSize, sampleRate);
 
-                    for (int index = 0; index < buffer.getNumSamples(); index += 512) {
+                    for (int index = 0; index < buffer.getNumSamples(); index += 1) {
 
-                        std::vector<float> audioFrame;
-
-                        for (int j = 0; j < 512; j++) {
-                            audioFrame[j] = buffer.getSample(0, index + j);
+                        if (index % (int)reader->sampleRate / 100 == 0) {
+                            std::vector<float> sample(_audioTimeSeries.begin() + prevSampleIndex, _audioTimeSeries.begin() + sampleIndex);
+                            gist.processAudioFrame(sample);
+                            _onsets.push_back(gist.energyDifference());
+                            prevSampleIndex += (int)reader->sampleRate / 100;
+                            sampleIndex += (int)reader->sampleRate / 100;
                         }
-
-                        gist.processAudioFrame (audioFrame);
-
-                        float energyDifference = gist.energyDifference();
-
-                        _onsets.push_back(energyDifference);
                     }
 
-                    // std::vector<double> fullTrackAudio;
-                    // std::vector<double> onsetDetectionFunction;
 
-                    // for (int i = 0; i < fullTrackAudio.size(); i += 512)
-                    // {
-                    //     std::vector<double> audioFrame;
+                    findPeaks(_onsets);
 
-                    //     for (int j = 0; j < 512; j++)
-                    //     {
-                    //         audioFrame[j] = fullTrackAudio[i + j];
-                    //     }
-
-                    //     gist.processAudioFrame (audioFrame);
-                    //     double energyDifference = gist.energyDifference();
-                    //     onsetDetectionFunction.push_back (energyDifference);
-                    // }
-
-
-
-                    for (int index = 0; index < _onsets.size(); index += 1)
-                        std::cout << _onsets.at(index) << std::endl;
+                    for (int index = 0; index < _peaksValues.size(); index += 1)
+                        std::cout << _peaksValues.at(index) << std::endl;
                 }
             } });
     }
 
-    // float OnsetDetectionFunction(const std::vector<float> buffer)
-    // {
-    //     float sum;
-    //     float difference;
+    void findPeaks(std::vector<float> _onsets)
+    {
+        float last_peak = -1e10;
 
-    //     sum = 0;
-
-    //     for (size_t i = 0; i < buffer.size(); i += 1) {
-    //         sum = sum + (buffer[i] * buffer[i]);
-    //     }
-
-    //     difference = sum - _preEnergySum;
-
-    //     _preEnergySum = sum;
-
-    //     return ((difference > 0) ? difference : 0.0);
-    // }
+        for (int index = 0; index < _onsets.size() -1; index++) {
+            if ((_onsets[index] > _onsets[index + 1]) && (_onsets[index] > _onsets[index - 1]) && (index - last_peak > 0)) {
+                _peaks.push_back(index);
+                _peaksValues.push_back(_onsets[index]);
+                last_peak = index;
+            }
+        }
+    }
 
     void playButtonClicked()
     {
@@ -200,6 +177,8 @@ private:
     juce::AudioSampleBuffer _buffer;
     std::vector<float> _audioTimeSeries;
     std::vector<float> _onsets;
+    std::vector<float> _peaks;
+    std::vector<float> _peaksValues;
 
     float _preEnergySum = 0.0;
 
