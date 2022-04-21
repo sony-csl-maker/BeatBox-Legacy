@@ -124,30 +124,26 @@ private:
                             sampleIndex += frameSize;
                         }
                     }
+                    findPeaks(_onsets);
 
-                    for (int index = 0; index < _onsets.size(); index += 1)
-                        std::cout << _onsets.at(index) << std::endl;
+                    for (int index = 0; index < _peaksValues.size(); index += 1)
+                        std::cout << _peaksValues.at(index) << std::endl;
                 }
             } });
     }
 
-    // float OnsetDetectionFunction(const std::vector<float> buffer)
-    // {
-    //     float sum;
-    //     float difference;
+    void findPeaks(std::vector<float> _onsets)
+    {
+        float last_peak = -1e10;
 
-    //     sum = 0;
-
-    //     for (size_t i = 0; i < buffer.size(); i += 1) {
-    //         sum = sum + (buffer[i] * buffer[i]);
-    //     }
-
-    //     difference = sum - _preEnergySum;
-
-    //     _preEnergySum = sum;
-
-    //     return ((difference > 0) ? difference : 0.0);
-    // }
+        for (int index = 0; index < _onsets.size() -1; index++) {
+            if ((_onsets[index] > _onset[index + 1]) && (_onset[index] > _onset[index - 1]) && (index - last_peak > 0)) {
+                _peaks.push_back(index);
+                _peaksValues.push_back(_onset[index]);
+                last_peak = index;
+            }
+        }
+    }
 
     void playButtonClicked()
     {
@@ -176,6 +172,8 @@ private:
     juce::AudioSampleBuffer _buffer;
     std::vector<float> _audioTimeSeries;
     std::vector<float> _onsets;
+    std::vector<float> _peaks;
+    std::vector<float> _peaksValues;
 
     float _preEnergySum = 0.0;
 
