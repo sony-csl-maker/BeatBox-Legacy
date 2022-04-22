@@ -116,20 +116,20 @@ private:
                     int sampleIndex = (int)reader->sampleRate / 100;
 
 
-                    // int frameSize = (int)reader->sampleRate / 100;
-                    // int sampleRate = 44100;
-                    // Gist<float> gist(frameSize, sampleRate);
+                    int frameSize = (int)reader->sampleRate / 100;
+                    int sampleRate = 44100;
+                    Gist<float> gist(frameSize, sampleRate);
 
-                    // for (int index = 0; index < buffer.getNumSamples(); index += 1) {
+                    for (int index = 0; index < buffer.getNumSamples(); index += 1) {
 
-                    //     if (index % (int)reader->sampleRate / 100 == 0) {
-                    //         std::vector<float> sample(_audioTimeSeries.begin() + prevSampleIndex, _audioTimeSeries.begin() + sampleIndex);
-                    //         gist.processAudioFrame(sample);
-                    //         _onsets.push_back(gist.energyDifference());
-                    //         prevSampleIndex += (int)reader->sampleRate / 100;
-                    //         sampleIndex += (int)reader->sampleRate / 100;
-                    //     }
-                    // }
+                        if (index % (int)reader->sampleRate / 100 == 0) {
+                            std::vector<float> sample(_audioTimeSeries.begin() + prevSampleIndex, _audioTimeSeries.begin() + sampleIndex);
+                            gist.processAudioFrame(sample);
+                            _onsets.push_back(gist.energyDifference());
+                            prevSampleIndex += (int)reader->sampleRate / 100;
+                            sampleIndex += (int)reader->sampleRate / 100;
+                        }
+                    }
 
 
                     findPeaks(_onsets);
