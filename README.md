@@ -1,16 +1,16 @@
 ## BeatBox
-Sony Computer Science Laboraties
+Sony Computer Science Laboratories
 
 #
 
+> Build
 ```
-Build
 cmake . -B cmake-build -DJUCE_BUILD_EXAMPLES=ON -DJUCE_BUILD_EXTRAS=ON
 cmake --build cmake-build-dir --target BeatBox
 ```
 
+> Execute
 ```
-Execute
 ./cmake-build-dir/examples/CMake/BeatBox/BeatBox_artefacts/BeatBox
 ```
 
