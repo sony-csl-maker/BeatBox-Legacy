@@ -1,3 +1,0 @@
-/home/maxime/JUCE/beatbox/Library/CMakeFiles/Gist.dir
-/home/maxime/JUCE/beatbox/Library/CMakeFiles/edit_cache.dir
-/home/maxime/JUCE/beatbox/Library/CMakeFiles/rebuild_cache.dir
