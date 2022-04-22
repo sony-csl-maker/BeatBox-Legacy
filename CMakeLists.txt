@@ -54,7 +54,7 @@ target_compile_definitions(BeatBox PRIVATE
     JUCE_STRICT_REFCOUNTEDPOINTER=1
     JUCE_UNIT_TESTS=1
     JUCE_USE_CAMERA=1
-    JUCE_USE_CURL=1
+    JUCE_USE_CURL=0
     JUCE_USE_MP3AUDIOFORMAT=1
     JUCE_WEB_BROWSER=1)
 
@@ -71,8 +71,8 @@ target_link_libraries(BeatBox PRIVATE
     juce::juce_recommended_lto_flags
     juce::juce_recommended_warning_flags)
 
-set(CMAKE_MODULE_PATH "${JUCE_SOURCE_DIR}/examples/CMake/BeatBox/Library/LibTorch/include/libtorch/share/cmake/Torch")
-set(CMAKE_PREFIX_PATH "${JUCE_SOURCE_DIR}/examples/CMake/BeatBox/Library/LibTorch/include/libtorch/share/cmake/Torch")
+set(CMAKE_MODULE_PATH "${JUCE_SOURCE_DIR}/examples/CMake/BeatBox/Library/LibTorch/share/cmake/Torch")
+set(CMAKE_PREFIX_PATH "${JUCE_SOURCE_DIR}/examples/CMake/BeatBox/Library/LibTorch/share/cmake/Torch")
 find_package(Torch REQUIRED)
 target_link_libraries(BeatBox PRIVATE "${TORCH_LIBRARIES}")
 
