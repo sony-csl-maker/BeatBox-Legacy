@@ -36,16 +36,11 @@
 *.idea/
 .gitignore
 
-# Beatbox Project Files
+# BeatBox Project Files
 *.pt
 *.wav
 *.py
-.gitignore
-beatbox.jucer
-BeatboxGan/build/BeatboxGan
-BeatboxGan/build/CMakeCache.txt
-BeatboxGan/build/CMakeFiles/
-BeatboxGan/build/Makefile
-BeatboxGan/build/cmake_install.cmake
-Builds/LinuxMakefile/build/
-transfer_timbre.py
+BeatBox.jucer
+Builds/
+CMakeFiles/
+CMakeCache.txt
