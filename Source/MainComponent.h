@@ -73,7 +73,6 @@ private:
             case Stopping:
                 _transportSource.stop();
                 break;
-
             }
         }
     }
@@ -115,6 +114,13 @@ private:
                     int prevSampleIndex = 0;
                     int sampleIndex = (int)reader->sampleRate / 100;
 
+                    try {
+                        _encoder = torch::jit::load(_encoderPath);
+                        _decoder = torch::jit::load(_decoderPath); //a regarder Torch::device / TorchOption
+                    } catch (const c10::Error& e) {
+                        std::cerr << "Errors(s): " << e.what() << "\n";
+                        return (1);
+                    }
 
                     int frameSize = (int)reader->sampleRate / 100;
                     int sampleRate = 44100;
@@ -142,17 +148,82 @@ private:
                         std::cout << "Sample :" << it.size() << std::endl;
                     }
 
+                    std::vector<float> v(transferSample(_samplesTab[0]).data_ptr<float>(), transferSample(_samplesTab[0]).data_ptr<float>() + transferSample(_samplesTab[0]).numel());
+                    for (auto a : v) std::cout << a << std::endl;
 
                 }
             } });
+    }
+
+    at::Tensor transferSample(const std::vector<float> &sample)
+    {
+        auto encoderTensorOptions = torch::TensorOptions()
+                                        .dtype(torch::kFloat)
+                                        .device(torch::kCPU);
+
+        std::vector<torch::jit::IValue> inputs;
+        inputs.push_back(torch::from_blob((void *)sample.data(), {(int64_t)1, (int64_t)sample.size()}, encoderTensorOptions));
+
+        at::Tensor latent = _encoder.forward(inputs).toTensor().detach();
+
+        std::vector<torch::jit::IValue> outputs;
+        outputs.push_back(latent);
+        return (_decoder.forward(outputs).toTensor().detach());
+    }
+
+    void encode(Array<float> audioBuffer, const unsigned int audioLength)
+    {
+        torch::Tensor tensor_wav = torch::from_blob(audioBuffer.data(), {1, audioLength});
+
+        std::vector<torch::jit::IValue> inputs;
+        inputs.push_back(tensor_wav);
+
+        torch::NoGradGuard no_grad;
+        torch::Tensor encoderOutput = _encoder.forward(inputs).toTensor();
+
+        float *valuePtr = encoderOutput.data_ptr<float>();
+        Array<float> arrayValues(valuePtr, numberOfDimensions + numberOfClasses);
+
+        Array<float> newZ;
+        newZ.resize(numberOfDimensions);
+
+        for (int idx = 0; idx < numberOfDimensions; idx++)
+        {
+            newZ.set(idx, arrayValues[idx]);
+
+            Array<float> normalizedClasses;
+            normalizedClasses.resize(numberOfClasses);
+
+            for (int idx = 0; idx < numberOfClasses; idx++)
+            {
+                normalizedClasses.set(idx, arrayValues[idx + numberOfDimensions]);
+            }
+        }
+    }
+
+    void decode(Array<float> z_c_array_ptr, unsigned int numberOfDimensions, unsigned int numberOfClasses)
+    {
+        torch::Tensor tensor_z_c = torch::from_blob(z_c_array_ptr, {1, numberOfDimensions + numberOfClasses}).clone();
+
+        std::vector<torch::jit::IValue> inputs;
+        inputs.push_back(tensor_z_c);
+
+        torch::NoGradGuard no_grad;
+        torch::Tensor decoderOutput = _decoder.forward(inputs).toTensor();
+
+        float *value = decoderOutput.data_ptr<float>();
+        int sizeWav = 24575;
+        Array<float> arrayWav(value, sizeWav);
     }
 
     void findPeaks(std::vector<float> onsets)
     {
         float last_peak = -1e10;
 
-        for (int index = 0; index < onsets.size() -1; index++) {
-            if ((_onsets[index] > onsets[index + 1]) && (onsets[index] > onsets[index - 1]) && (index - last_peak > 0)) {
+        for (int index = 0; index < onsets.size() - 1; index++)
+        {
+            if ((_onsets[index] > onsets[index + 1]) && (onsets[index] > onsets[index - 1]) && (index - last_peak > 0))
+            {
                 _peaks.push_back(index);
                 _peaksValues.push_back(onsets[index]);
                 last_peak = index;
@@ -164,8 +235,10 @@ private:
     {
         int length = 24575;
 
-        for (int index = 0; index < onsetPeaks.size() - 1; index++) {
-            if ((onsetPeaks[index] + length) < audio.size()) {
+        for (int index = 0; index < onsetPeaks.size() - 1; index++)
+        {
+            if ((onsetPeaks[index] + length) < audio.size())
+            {
                 _startEnd.push_back({onsetPeaks[index], onsetPeaks[index] + length});
             }
         }
@@ -173,7 +246,8 @@ private:
 
     void transferTrack(std::vector<std::pair<float, float>> startEnd)
     {
-        for (auto it : startEnd) {
+        for (auto it : startEnd)
+        {
             std::vector<float> sample(_audioTimeSeries.begin() + it.first, _audioTimeSeries.begin() + it.second);
             _samplesTab.push_back(sample);
         }
@@ -212,6 +286,11 @@ private:
     std::vector<std::pair<float, float>> _startEnd;
 
     std::vector<std::vector<float>> _samplesTab;
+
+    std::string _encoderPath;
+    std::string _decoderPath;
+    torch::jit::script::Module _encoder;
+    torch::jit::script::Module _decoder;
 
     float _preEnergySum = 0.0;
 
