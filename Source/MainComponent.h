@@ -159,9 +159,6 @@ private:
 
     Array<float> transferSample(std::vector<float> sample)
     {
-        int numberOfClasses = sample.size();
-        int numberOfDimensions = sample.size();
-
         torch::Tensor tensor_wav = torch::from_blob(sample.data(), {1, (int)sample.size()});
 
         std::vector<torch::jit::IValue> inputs;
@@ -174,7 +171,7 @@ private:
         torch::Tensor decoderOutput = _decoder.forward(temp_op).toTensor();
 
         float *valuePtr = decoderOutput.data_ptr<float>();
-        Array<float> arrayValues(valuePtr, numberOfDimensions + numberOfClasses);
+        Array<float> arrayValues(valuePtr, _numberOfDimensions + _numberOfClasses);
 
         return (arrayValues);
     }
@@ -182,8 +179,8 @@ private:
     Array<float> encode(Array<float> audioBuffer, const int audioLength)
     {
         torch::Tensor tensor_wav = torch::from_blob(audioBuffer.data(), {1, audioLength});
-        int numberOfClasses = audioLength;
-        int numberOfDimensions = audioLength;
+        int _numberOfClasses = 128;
+        int _numberOfDimensions = 3;
 
         std::vector<torch::jit::IValue> inputs;
         inputs.push_back(tensor_wav);
@@ -192,29 +189,27 @@ private:
         torch::Tensor encoderOutput = _encoder.forward(inputs).toTensor();
 
         float *valuePtr = encoderOutput.data_ptr<float>();
-        Array<float> arrayValues(valuePtr, numberOfDimensions + numberOfClasses);
+        Array<float> arrayValues(valuePtr, _numberOfDimensions + _numberOfClasses);
 
-        Array<float> newZ;
-        newZ.resize(numberOfDimensions);
+        _newZ.resize(_numberOfDimensions);
 
-        Array<float> normalizedClasses;
-        for (int idx = 0; idx < numberOfDimensions; idx++)
+        for (int idx = 0; idx < _numberOfDimensions; idx++)
         {
-            newZ.set(idx, arrayValues[idx]);
-
-            normalizedClasses.resize(numberOfClasses);
-
-            for (int index = 0; index < numberOfClasses; index++)
-            {
-                normalizedClasses.set(index, arrayValues[index + numberOfDimensions]);
-            }
+            _newZ.set(idx, arrayValues[idx]);
         }
-        return (normalizedClasses);
+
+        _normalizedClasses.resize(_numberOfClasses);
+
+        for (int index = 0; index < _numberOfClasses; index++)
+        {
+            _normalizedClasses.set(index, arrayValues[index + _numberOfDimensions]);
+        }
+        return (arrayValues);
     }
 
-    Array<float>  decode(Array<float> z_c_array_ptr, unsigned int numberOfDimensions, unsigned int numberOfClasses)
+    Array<float> decode(Array<float> z_c_array_ptr)
     {
-        torch::Tensor tensor_z_c = torch::from_blob(z_c_array_ptr.data(), {1, numberOfDimensions + numberOfClasses}).clone();
+        torch::Tensor tensor_z_c = torch::from_blob(z_c_array_ptr.data(), {1, _numberOfDimensions + _numberOfClasses}).clone();
 
         std::vector<torch::jit::IValue> inputs;
         inputs.push_back(tensor_z_c);
@@ -304,6 +299,11 @@ private:
     std::string _decoderPath = "JUCE/examples/CMake/BeatBox/gen_noattr_128.pt";
     torch::jit::script::Module _encoder;
     torch::jit::script::Module _decoder;
+
+    Array<float> _newZ;
+    Array<float> _normalizedClasses;
+    int _numberOfClasses = 128;
+    int _numberOfDimensions = 3;
 
     float _preEnergySum = 0.0;
 
