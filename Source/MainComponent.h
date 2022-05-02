@@ -116,7 +116,7 @@ private:
 
                     try {
                         _encoder = torch::jit::load(_encoderPath);
-                        _decoder = torch::jit::load(_decoderPath); //a regarder Torch::device / TorchOption
+                        _decoder = torch::jit::load(_decoderPath);
                     } catch (const c10::Error& e) {
                         std::cerr << "Errors(s): " << e.what() << "\n";
                         return (1);
@@ -137,7 +137,6 @@ private:
                         }
                     }
 
-
                     findPeaks(_onsets);
                     for (int index = 0; index < _peaks.size() - 1; index += 1)
                         _peaks[index] *= 441;
@@ -147,33 +146,35 @@ private:
                     for (auto it : _samplesTab) {
                         std::cout << "Sample :" << it.size() << std::endl;
                     }
-
-                    std::vector<float> v(transferSample(_samplesTab[0]).data_ptr<float>(), transferSample(_samplesTab[0]).data_ptr<float>() + transferSample(_samplesTab[0]).numel());
-                    for (auto a : v) std::cout << a << std::endl;
-
                 }
             } });
     }
 
-    at::Tensor transferSample(const std::vector<float> &sample)
+    Array<float> transferSample(std::vector<float> sample)
     {
-        auto encoderTensorOptions = torch::TensorOptions()
-                                        .dtype(torch::kFloat)
-                                        .device(torch::kCPU);
+        unsigned int numberOfClasses = sample.size();
+        unsigned int numberOfDimensions = sample.size();
+
+        torch::Tensor tensor_wav = torch::from_blob(sample.data(), {1, (unsigned int)sample.size()});
 
         std::vector<torch::jit::IValue> inputs;
-        inputs.push_back(torch::from_blob((void *)sample.data(), {(int64_t)1, (int64_t)sample.size()}, encoderTensorOptions));
+        inputs.push_back(tensor_wav);
 
-        at::Tensor latent = _encoder.forward(inputs).toTensor().detach();
+        auto latent = _encoder.forward(inputs).toTensor();
+        std::vector<torch::jit::IValue>temp_op;
+        temp_op.push_back(latent);
 
-        std::vector<torch::jit::IValue> outputs;
-        outputs.push_back(latent);
-        return (_decoder.forward(outputs).toTensor().detach());
+        torch::Tensor decoderOutput = _decoder.forward(temp_op).toTensor();
+
+        float *valuePtr = decoderOutput.data_ptr<float>();
+        Array<float> arrayValues(valuePtr, numberOfDimensions + numberOfClasses);
     }
 
-    void encode(Array<float> audioBuffer, const unsigned int audioLength)
+    Array<float> encode(Array<float> audioBuffer, const unsigned int audioLength)
     {
         torch::Tensor tensor_wav = torch::from_blob(audioBuffer.data(), {1, audioLength});
+        unsigned int numberOfClasses = audioLength;
+        unsigned int numberOfDimensions = audioLength;
 
         std::vector<torch::jit::IValue> inputs;
         inputs.push_back(tensor_wav);
@@ -187,11 +188,11 @@ private:
         Array<float> newZ;
         newZ.resize(numberOfDimensions);
 
+        Array<float> normalizedClasses;
         for (int idx = 0; idx < numberOfDimensions; idx++)
         {
             newZ.set(idx, arrayValues[idx]);
 
-            Array<float> normalizedClasses;
             normalizedClasses.resize(numberOfClasses);
 
             for (int idx = 0; idx < numberOfClasses; idx++)
@@ -199,11 +200,12 @@ private:
                 normalizedClasses.set(idx, arrayValues[idx + numberOfDimensions]);
             }
         }
+        return (normalizedClasses);
     }
 
-    void decode(Array<float> z_c_array_ptr, unsigned int numberOfDimensions, unsigned int numberOfClasses)
+    Array<float>  decode(Array<float> z_c_array_ptr, unsigned int numberOfDimensions, unsigned int numberOfClasses)
     {
-        torch::Tensor tensor_z_c = torch::from_blob(z_c_array_ptr, {1, numberOfDimensions + numberOfClasses}).clone();
+        torch::Tensor tensor_z_c = torch::from_blob(z_c_array_ptr.data(), {1, numberOfDimensions + numberOfClasses}).clone();
 
         std::vector<torch::jit::IValue> inputs;
         inputs.push_back(tensor_z_c);
@@ -214,6 +216,8 @@ private:
         float *value = decoderOutput.data_ptr<float>();
         int sizeWav = 24575;
         Array<float> arrayWav(value, sizeWav);
+
+        return (arrayWav);
     }
 
     void findPeaks(std::vector<float> onsets)
@@ -287,8 +291,8 @@ private:
 
     std::vector<std::vector<float>> _samplesTab;
 
-    std::string _encoderPath;
-    std::string _decoderPath;
+    std::string _encoderPath = "JUCE/examples/CMake/BeatBox/encoderOlesia15_r50_4.pt";
+    std::string _decoderPath = "JUCE/examples/CMake/BeatBox/gen_noattr_128.pt";
     torch::jit::script::Module _encoder;
     torch::jit::script::Module _decoder;
 
