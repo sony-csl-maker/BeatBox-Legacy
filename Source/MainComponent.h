@@ -61,6 +61,11 @@ private:
                 _playButton.setEnabled(true);
                 break;
 
+            case Pause: // Is Paused in reality
+                _stopButton.setEnabled(false);
+                _playButton.setEnabled(true);
+                break;
+
             case Starting:
                 _playButton.setEnabled(false);
                 _transportSource.start();
@@ -93,7 +98,7 @@ private:
 
                 auto* reader = _formatManager.createReaderFor (file);
 
-                juce::AudioSampleBuffer buffer(reader->numChannels, reader->lengthInSamples);
+                juce::AudioSampleBuffer buffer((int)reader->numChannels, reader->lengthInSamples);
 
                 if (reader != nullptr)
                 {
@@ -138,7 +143,7 @@ private:
                     }
 
                     findPeaks(_onsets);
-                    for (int index = 0; index < _peaks.size() - 1; index += 1)
+                    for (unsigned int index = 0; index < _peaks.size() - 1; index += 1)
                         _peaks[index] *= 441;
                     findStartEndOnset(_audioTimeSeries, _peaks);
                     transferTrack(_startEnd);
@@ -147,15 +152,17 @@ private:
                         std::cout << "Sample :" << it.size() << std::endl;
                     }
                 }
-            } });
+            }
+        });
+        return;
     }
 
     Array<float> transferSample(std::vector<float> sample)
     {
-        unsigned int numberOfClasses = sample.size();
-        unsigned int numberOfDimensions = sample.size();
+        int numberOfClasses = sample.size();
+        int numberOfDimensions = sample.size();
 
-        torch::Tensor tensor_wav = torch::from_blob(sample.data(), {1, (unsigned int)sample.size()});
+        torch::Tensor tensor_wav = torch::from_blob(sample.data(), {1, (int)sample.size()});
 
         std::vector<torch::jit::IValue> inputs;
         inputs.push_back(tensor_wav);
@@ -168,13 +175,15 @@ private:
 
         float *valuePtr = decoderOutput.data_ptr<float>();
         Array<float> arrayValues(valuePtr, numberOfDimensions + numberOfClasses);
+
+        return (arrayValues);
     }
 
-    Array<float> encode(Array<float> audioBuffer, const unsigned int audioLength)
+    Array<float> encode(Array<float> audioBuffer, const int audioLength)
     {
         torch::Tensor tensor_wav = torch::from_blob(audioBuffer.data(), {1, audioLength});
-        unsigned int numberOfClasses = audioLength;
-        unsigned int numberOfDimensions = audioLength;
+        int numberOfClasses = audioLength;
+        int numberOfDimensions = audioLength;
 
         std::vector<torch::jit::IValue> inputs;
         inputs.push_back(tensor_wav);
@@ -195,9 +204,9 @@ private:
 
             normalizedClasses.resize(numberOfClasses);
 
-            for (int idx = 0; idx < numberOfClasses; idx++)
+            for (int index = 0; index < numberOfClasses; index++)
             {
-                normalizedClasses.set(idx, arrayValues[idx + numberOfDimensions]);
+                normalizedClasses.set(index, arrayValues[index + numberOfDimensions]);
             }
         }
         return (normalizedClasses);
@@ -224,7 +233,7 @@ private:
     {
         float last_peak = -1e10;
 
-        for (int index = 0; index < onsets.size() - 1; index++)
+        for (long unsigned int index = 0; index < onsets.size() - 1; index++)
         {
             if ((_onsets[index] > onsets[index + 1]) && (onsets[index] > onsets[index - 1]) && (index - last_peak > 0))
             {
@@ -237,9 +246,9 @@ private:
 
     void findStartEndOnset(std::vector<float> audio, std::vector<float> onsetPeaks)
     {
-        int length = 24575;
+        long unsigned int length = 24575;
 
-        for (int index = 0; index < onsetPeaks.size() - 1; index++)
+        for (long unsigned int index = 0; index < onsetPeaks.size() - 1; index++)
         {
             if ((onsetPeaks[index] + length) < audio.size())
             {
