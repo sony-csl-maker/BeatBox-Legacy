@@ -159,21 +159,14 @@ private:
 
     Array<float> transferSample(std::vector<float> sample)
     {
-        torch::Tensor tensor_wav = torch::from_blob(sample.data(), {1, (int)sample.size()});
+        Array<float> transform;
 
-        std::vector<torch::jit::IValue> inputs;
-        inputs.push_back(tensor_wav);
+        for (auto it : sample)
+            transform.add(it);
 
-        auto latent = _encoder.forward(inputs).toTensor();
-        std::vector<torch::jit::IValue>temp_op;
-        temp_op.push_back(latent);
+        Array<float> encodedSample = encode(transform, 24575);
 
-        torch::Tensor decoderOutput = _decoder.forward(temp_op).toTensor();
-
-        float *valuePtr = decoderOutput.data_ptr<float>();
-        Array<float> arrayValues(valuePtr, _numberOfDimensions + _numberOfClasses);
-
-        return (arrayValues);
+        return (decode(encodedSample));
     }
 
     Array<float> encode(Array<float> audioBuffer, const int audioLength)
