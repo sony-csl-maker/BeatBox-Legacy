@@ -152,9 +152,31 @@ private:
                         std::cout << "Sample :" << it.size() << std::endl;
                     }
                 }
-            }
-        });
+            } });
         return;
+    }
+
+    void saveNewWavFile()
+    {
+        // Array<float> dataPtr = _samplesTab[0];
+        AudioBuffer<float> buffer = AudioBuffer<float>(1, _samplesTab[0].size());
+        buffer.setSize(2, 10000);
+
+        File file("newFile.wav");
+        file.deleteFile();
+
+        WavAudioFormat format;
+        std::unique_ptr<AudioFormatWriter> writer;
+
+        writer.reset(format.createWriterFor(new FileOutputStream(file),
+                                            44100,
+                                            buffer.getNumChannels(),
+                                            24,
+                                            {},
+                                            0));
+
+        if (writer != nullptr)
+            writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
     }
 
     Array<float> transferSample(std::vector<float> sample)
@@ -295,6 +317,7 @@ private:
 
     Array<float> _newZ;
     Array<float> _normalizedClasses;
+
     int _numberOfClasses = 128;
     int _numberOfDimensions = 3;
 
