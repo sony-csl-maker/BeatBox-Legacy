@@ -159,7 +159,7 @@ private:
     void saveNewWavFile()
     {
         // Array<float> dataPtr = _samplesTab[0];
-        AudioBuffer<float> buffer = AudioBuffer<float>(1, _samplesTab[0].size());
+        AudioBuffer<float> buffer = AudioBuffer<float>(1, transferSample(_samplesTab[0]).size());
         buffer.setSize(2, 10000);
 
         File file("newFile.wav");
