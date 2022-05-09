@@ -149,30 +149,39 @@ private:
                     findStartEndOnset(_audioTimeSeries, _peaks);
 
                     transferTrack(_startEnd);
+
+                    std::cout << "Size: " << _samplesTab.size() << std::endl;
+
+                    // for (int index = 0; index < _samplesTab.size(); index += 1)
+                    //     saveNewWavFile(index);
                 }
             }
         });
 
-        saveNewWavFile();
-
         return;
     }
 
-    void saveNewWavFile()
+    void saveNewWavFile(int sampleIndex)
     {
-        File file("JUCE/examples/CMake/BeatBox/new.wav");
-        // Array<float> array(transferSample(_samplesTab[0]));
-        AudioBuffer<float> buffer;
-        WavAudioFormat format;
-        std::unique_ptr<AudioFormatWriter> writer;
-        writer.reset(format.createWriterFor(new FileOutputStream(file),
+        juce::File file("JUCE/examples/CMake/BeatBox/Musics/new" + std::to_string(sampleIndex) + ".wav");
+        Array<float> array(transferSample(_samplesTab[sampleIndex]));
+        AudioBuffer<float> buffer(2, 24575);
+
+        for (int index = 0; index < array.size(); index += 1)
+            buffer.setSample(0, index, array[index]);
+
+        juce::WavAudioFormat format;
+        std::unique_ptr<juce::AudioFormatWriter> writer;
+        writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
                                             44100.0,
                                             buffer.getNumChannels(),
                                             24,
                                             {},
                                             0));
-        if (writer != nullptr)
+        if (writer != nullptr) {
+            std::cout << "Writing file..." << std::endl;
             writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
+        }
     }
 
     Array<float> transferSample(std::vector<float> sample)
