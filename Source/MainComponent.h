@@ -90,7 +90,7 @@ private:
         auto chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles;
 
         _fileChooser->launchAsync(chooserFlags, [this](const juce::FileChooser &fc)
-                                  {
+        {
             auto file = fc.getResult();
 
             if (file != juce::File{})
@@ -145,36 +145,32 @@ private:
                     findPeaks(_onsets);
                     for (unsigned int index = 0; index < _peaks.size() - 1; index += 1)
                         _peaks[index] *= 441;
-                    findStartEndOnset(_audioTimeSeries, _peaks);
-                    transferTrack(_startEnd);
 
-                    for (auto it : _samplesTab) {
-                        std::cout << "Sample :" << it.size() << std::endl;
-                    }
+                    findStartEndOnset(_audioTimeSeries, _peaks);
+
+                    transferTrack(_startEnd);
                 }
-            } });
+            }
+        });
+
+        saveNewWavFile();
+
         return;
     }
 
     void saveNewWavFile()
     {
-        // Array<float> dataPtr = _samplesTab[0];
-        AudioBuffer<float> buffer = AudioBuffer<float>(1, transferSample(_samplesTab[0]).size());
-        buffer.setSize(2, 10000);
-
-        File file("newFile.wav");
-        file.deleteFile();
-
+        File file("JUCE/examples/CMake/BeatBox/new.wav");
+        // Array<float> array(transferSample(_samplesTab[0]));
+        AudioBuffer<float> buffer;
         WavAudioFormat format;
         std::unique_ptr<AudioFormatWriter> writer;
-
         writer.reset(format.createWriterFor(new FileOutputStream(file),
-                                            44100,
+                                            44100.0,
                                             buffer.getNumChannels(),
                                             24,
                                             {},
                                             0));
-
         if (writer != nullptr)
             writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
     }
@@ -194,8 +190,6 @@ private:
     Array<float> encode(Array<float> audioBuffer, const int audioLength)
     {
         torch::Tensor tensor_wav = torch::from_blob(audioBuffer.data(), {1, audioLength});
-        int _numberOfClasses = 128;
-        int _numberOfDimensions = 3;
 
         std::vector<torch::jit::IValue> inputs;
         inputs.push_back(tensor_wav);
@@ -327,6 +321,8 @@ private:
     std::unique_ptr<juce::AudioFormatReaderSource> _readerSource;
     juce::AudioTransportSource _transportSource;
     TransportState _state;
+
+    std::unique_ptr<juce::AudioFormatWriter> _writer;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
