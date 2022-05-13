@@ -90,13 +90,14 @@ private:
         auto chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles;
 
         _fileChooser->launchAsync(chooserFlags, [this](const juce::FileChooser &fc)
-        {
+                                  {
             auto file = fc.getResult();
 
             if (file != juce::File{})
             {
 
                 auto* reader = _formatManager.createReaderFor (file);
+                _filename = file.getFileName().toStdString();
 
                 juce::AudioSampleBuffer buffer((int)reader->numChannels, reader->lengthInSamples);
 
@@ -110,11 +111,8 @@ private:
                     buffer.setSize ((int) reader->numChannels, (int) reader->lengthInSamples);
                     reader->read (&buffer, 0, (int) reader->lengthInSamples, 0, true, true);
 
-                    DBG(buffer.getNumSamples());
-
                     for (int index = 0; index < buffer.getNumSamples(); index += 1)
                         _audioTimeSeries.push_back(buffer.getSample(0, index));
-
 
                     int prevSampleIndex = 0;
                     int sampleIndex = (int)reader->sampleRate / 100;
@@ -150,20 +148,53 @@ private:
 
                     transferTrack(_startEnd);
 
-                    std::cout << "Size: " << _samplesTab.size() << std::endl;
+                    // std::cout << "Size: " << _samplesTab.size() << std::endl;
 
                     // for (int index = 0; index < _samplesTab.size(); index += 1)
-                    //     saveNewWavFile(index);
-                }
-            }
-        });
+                    //     std::cout << "IndexSize " << std::to_string(index) << ": " << _samplesTab[index].size() << std::endl;
 
+
+                    // for (int index = 0; index < 10; index += 1)
+                    //     saveSamplesWavFile(index);
+
+                    // for (int index = 0; index < _samplesTab.size(); index += 1)
+
+                    std::cout << "Size: " << _samplesTab.size() << std::endl;
+                    // saveTransferredWavFile(_samplesTab);
+                }
+            } });
         return;
     }
 
-    void saveNewWavFile(int sampleIndex)
+    void saveTransferredWavFile(std::vector<std::vector<float>> samplesTab)
     {
-        juce::File file("JUCE/examples/CMake/BeatBox/Musics/new" + std::to_string(sampleIndex) + ".wav");
+        juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-transferred" + ".wav");
+
+        fillEncodedSamples();
+
+        Array<float> array(_encodedAudioTimeSeries.data());
+        AudioBuffer<float> buffer(2, _encodedAudioTimeSeries.size());
+
+        for (int index = 0; index < array.size(); index += 1)
+            buffer.setSample(0, index, array[index]);
+
+        juce::WavAudioFormat format;
+        std::unique_ptr<juce::AudioFormatWriter> writer;
+        writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
+                                            44100.0,
+                                            buffer.getNumChannels(),
+                                            24,
+                                            {},
+                                            0));
+        if (writer != nullptr) {
+            std::cout << "Writing Transferred file..." << std::endl;
+            writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
+        }
+    }
+
+    void saveSamplesWavFile(int sampleIndex)
+    {
+        juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-sample" + std::to_string(sampleIndex) + ".wav");
         Array<float> array(transferSample(_samplesTab[sampleIndex]));
         AudioBuffer<float> buffer(2, 24575);
 
@@ -178,9 +209,42 @@ private:
                                             24,
                                             {},
                                             0));
-        if (writer != nullptr) {
-            std::cout << "Writing file..." << std::endl;
+        if (writer != nullptr)
+        {
+            std::cout << "Writing Samples file..." << std::endl;
             writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
+        }
+    }
+
+    void fillEncodedSamples()
+    {
+        int index = 0;
+        juce::Array<float> juceSampleArray;
+
+        // First Part: encode the samples
+        for (int sampleIndex = 0; sampleIndex < _samplesTab.size(); sampleIndex += 1)
+        { // loop to fill the encoded samples in an array from JUCE
+            juceSampleArray.addArray(transferSample(_samplesTab[sampleIndex]));
+
+            for (int sample = 0; sample < juceSampleArray.size(); sample += 1)
+            { // loop to fill the encoded values from the JUCE object to an STL one
+                _encodedSamplesTab.at(sampleIndex).push_back(juceSampleArray[sample]);
+            }
+        }
+
+        // Second Part: insert the samples in the audio track
+        std::fill(_encodedAudioTimeSeries.begin(), _encodedAudioTimeSeries.end(), 0.0f);
+
+        for (int index = 0; index < _encodedAudioTimeSeries.size(); index += 1)
+        {
+            if (index == _startEnd[index].first)
+            {
+                for (int sampleIndex = 0; sampleIndex < 24575; sampleIndex += 1)
+                {
+                    auto sampleIterator = _encodedAudioTimeSeries.begin() + index + sampleIndex;
+                    _encodedAudioTimeSeries.emplace(sampleIterator, _encodedSamplesTab[index][sampleIndex]);
+                }
+            }
         }
     }
 
@@ -239,6 +303,8 @@ private:
         int sizeWav = 24575;
         Array<float> arrayWav(value, sizeWav);
 
+        std::cout << "Decodede Size: " << arrayWav.size() << std::endl;
+
         return (arrayWav);
     }
 
@@ -272,10 +338,14 @@ private:
 
     void transferTrack(std::vector<std::pair<float, float>> startEnd)
     {
+        int index = 0;
+
         for (auto it : startEnd)
         {
             std::vector<float> sample(_audioTimeSeries.begin() + it.first, _audioTimeSeries.begin() + it.second);
-            _samplesTab.push_back(sample);
+            std::cout << "[TransferTrack] NON ENCODED : for sample " << std::to_string(index) << " " << it.first << " - " << it.second << std::endl;
+            _samplesTab.push_back(sample); // 24575
+            index += 1;
         }
     }
 
@@ -305,6 +375,8 @@ private:
 
     juce::AudioSampleBuffer _buffer;
     std::vector<float> _audioTimeSeries;
+    std::vector<float> _encodedAudioTimeSeries;
+
     std::vector<float> _onsets;
     std::vector<float> _peaks;
     std::vector<float> _peaksValues;
@@ -312,6 +384,9 @@ private:
     std::vector<std::pair<float, float>> _startEnd;
 
     std::vector<std::vector<float>> _samplesTab;
+    std::vector<std::vector<float>> _encodedSamplesTab;
+
+    std::string _filename;
 
     std::string _encoderPath = "JUCE/examples/CMake/BeatBox/encoderOlesia15_r50_4.pt";
     std::string _decoderPath = "JUCE/examples/CMake/BeatBox/gen_noattr_128.pt";
