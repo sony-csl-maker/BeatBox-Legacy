@@ -99,7 +99,7 @@ private:
                 auto* reader = _formatManager.createReaderFor (file);
                 _filename = file.getFileName().toStdString();
 
-                juce::AudioSampleBuffer buffer((int)reader->numChannels, reader->lengthInSamples);
+                juce::AudioSampleBuffer buffer(1, reader->lengthInSamples);
 
                 if (reader != nullptr)
                 {
@@ -151,41 +151,41 @@ private:
                     std::cout << "Size: " << _samplesTab.size() << std::endl;
 
                     saveTransferredWavFile(_samplesTab);
-                    saveOriginWavFile();
+                    // saveOriginWavFile();
 
                 }
             } });
         return;
     }
 
-    void saveOriginWavFile()
-    {
-        juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-orig" + ".wav");
+    // void saveOriginWavFile()
+    // {
+    //     juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-orig" + ".wav");
 
-        Array<float> array;
+    //     Array<float> array;
 
-        for (auto it : _audioTimeSeries)
-            array.add(it);
+    //     for (auto it : _audioTimeSeries)
+    //         array.add(it);
 
-        AudioBuffer<float> buffer(2, _audioTimeSeries.size());
+    //     AudioBuffer<float> buffer(2, _audioTimeSeries.size());
 
-        for (int index = 0; index < array.size(); index += 1)
-            buffer.setSample(0, index, array[index]);
+    //     for (int index = 0; index < array.size(); index += 1)
+    //         buffer.setSample(0, index, array[index]);
 
-        juce::WavAudioFormat format;
-        std::unique_ptr<juce::AudioFormatWriter> writer;
-        writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
-                                            44100.0,
-                                            buffer.getNumChannels(),
-                                            24,
-                                            {},
-                                            0));
-        if (writer != nullptr)
-        {
-            std::cout << "Writing Origin file..." << std::endl;
-            writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
-        }
-    }
+    //     juce::WavAudioFormat format;
+    //     std::unique_ptr<juce::AudioFormatWriter> writer;
+    //     writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
+    //                                         44100.0,
+    //                                         buffer.getNumChannels(),
+    //                                         16,
+    //                                         {},
+    //                                         0));
+    //     if (writer != nullptr)
+    //     {
+    //         std::cout << "Writing Origin file..." << std::endl;
+    //         writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
+    //     }
+    // }
 
     void saveTransferredWavFile([[maybe_unused]] std::vector<std::vector<float>> samplesTab)
     {
@@ -198,7 +198,7 @@ private:
         for (auto it : _encodedAudioTimeSeries)
             array.add(it);
 
-        AudioBuffer<float> buffer(2, _encodedAudioTimeSeries.size());
+        AudioBuffer<float> buffer(1, _encodedAudioTimeSeries.size());
 
         for (int index = 0; index < array.size(); index += 1)
             buffer.setSample(0, index, array[index]);
@@ -207,8 +207,8 @@ private:
         std::unique_ptr<juce::AudioFormatWriter> writer;
         writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
                                             44100.0,
-                                            buffer.getNumChannels(),
-                                            24,
+                                            1,
+                                            16,
                                             {},
                                             0));
         if (writer != nullptr)
@@ -315,7 +315,7 @@ private:
         int sizeWav = 24575;
         Array<float> arrayWav(value, sizeWav);
 
-        std::cout << "Decodede Size " << std::to_string(_index) << ": " << arrayWav.size() << std::endl;
+        std::cout << "Decodede Sample number " << std::to_string(_index) << ": " << arrayWav.size() << std::endl;
         _index += 1;
 
         return (arrayWav);

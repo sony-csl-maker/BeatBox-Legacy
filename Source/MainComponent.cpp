@@ -26,7 +26,7 @@ MainComponent::MainComponent()
     addAndMakeVisible(&_currentPositionLabel);
     _currentPositionLabel.setText("Stopped", juce::dontSendNotification);
 
-    setSize(1000, 800);
+    setSize(300, 600);
 
     _formatManager.registerBasicFormats();
     _transportSource.addChangeListener(this);
