@@ -148,31 +148,56 @@ private:
 
                     transferTrack(_startEnd);
 
-                    // std::cout << "Size: " << _samplesTab.size() << std::endl;
-
-                    // for (int index = 0; index < _samplesTab.size(); index += 1)
-                    //     std::cout << "IndexSize " << std::to_string(index) << ": " << _samplesTab[index].size() << std::endl;
-
-
-                    // for (int index = 0; index < 10; index += 1)
-                    //     saveSamplesWavFile(index);
-
-                    // for (int index = 0; index < _samplesTab.size(); index += 1)
-
                     std::cout << "Size: " << _samplesTab.size() << std::endl;
-                    // saveTransferredWavFile(_samplesTab);
+
+                    saveTransferredWavFile(_samplesTab);
+                    saveOriginWavFile();
+
                 }
             } });
         return;
     }
 
-    void saveTransferredWavFile(std::vector<std::vector<float>> samplesTab)
+    void saveOriginWavFile()
+    {
+        juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-orig" + ".wav");
+
+        Array<float> array;
+
+        for (auto it : _audioTimeSeries)
+            array.add(it);
+
+        AudioBuffer<float> buffer(2, _audioTimeSeries.size());
+
+        for (int index = 0; index < array.size(); index += 1)
+            buffer.setSample(0, index, array[index]);
+
+        juce::WavAudioFormat format;
+        std::unique_ptr<juce::AudioFormatWriter> writer;
+        writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
+                                            44100.0,
+                                            buffer.getNumChannels(),
+                                            24,
+                                            {},
+                                            0));
+        if (writer != nullptr)
+        {
+            std::cout << "Writing Origin file..." << std::endl;
+            writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
+        }
+    }
+
+    void saveTransferredWavFile([[maybe_unused]] std::vector<std::vector<float>> samplesTab)
     {
         juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-transferred" + ".wav");
 
         fillEncodedSamples();
 
-        Array<float> array(_encodedAudioTimeSeries.data());
+        Array<float> array;
+
+        for (auto it : _encodedAudioTimeSeries)
+            array.add(it);
+
         AudioBuffer<float> buffer(2, _encodedAudioTimeSeries.size());
 
         for (int index = 0; index < array.size(); index += 1)
@@ -186,7 +211,8 @@ private:
                                             24,
                                             {},
                                             0));
-        if (writer != nullptr) {
+        if (writer != nullptr)
+        {
             std::cout << "Writing Transferred file..." << std::endl;
             writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
         }
@@ -218,32 +244,18 @@ private:
 
     void fillEncodedSamples()
     {
-        int index = 0;
-        juce::Array<float> juceSampleArray;
+        std::vector<Array<float>> encodedSamplesTab;
 
-        // First Part: encode the samples
-        for (int sampleIndex = 0; sampleIndex < _samplesTab.size(); sampleIndex += 1)
-        { // loop to fill the encoded samples in an array from JUCE
-            juceSampleArray.addArray(transferSample(_samplesTab[sampleIndex]));
+        for (size_t sampleIndex = 0; sampleIndex < _samplesTab.size(); sampleIndex += 1)
+            encodedSamplesTab.push_back(transferSample(_samplesTab[sampleIndex]));
 
-            for (int sample = 0; sample < juceSampleArray.size(); sample += 1)
-            { // loop to fill the encoded values from the JUCE object to an STL one
-                _encodedSamplesTab.at(sampleIndex).push_back(juceSampleArray[sample]);
-            }
-        }
-
-        // Second Part: insert the samples in the audio track
+        _encodedAudioTimeSeries.resize(_audioTimeSeries.size());
         std::fill(_encodedAudioTimeSeries.begin(), _encodedAudioTimeSeries.end(), 0.0f);
 
-        for (int index = 0; index < _encodedAudioTimeSeries.size(); index += 1)
-        {
-            if (index == _startEnd[index].first)
-            {
-                for (int sampleIndex = 0; sampleIndex < 24575; sampleIndex += 1)
-                {
-                    auto sampleIterator = _encodedAudioTimeSeries.begin() + index + sampleIndex;
-                    _encodedAudioTimeSeries.emplace(sampleIterator, _encodedSamplesTab[index][sampleIndex]);
-                }
+        for (int index = 0; index < _startEnd.size(); index += 1) {
+
+            for (int sampleIndex = 0; sampleIndex < 24575; sampleIndex += 1) {
+                _encodedAudioTimeSeries[_startEnd.at(index).first + sampleIndex] = encodedSamplesTab[index][sampleIndex];
             }
         }
     }
@@ -303,7 +315,8 @@ private:
         int sizeWav = 24575;
         Array<float> arrayWav(value, sizeWav);
 
-        std::cout << "Decodede Size: " << arrayWav.size() << std::endl;
+        std::cout << "Decodede Size " << std::to_string(_index) << ": " << arrayWav.size() << std::endl;
+        _index += 1;
 
         return (arrayWav);
     }
@@ -387,6 +400,7 @@ private:
     std::vector<std::vector<float>> _encodedSamplesTab;
 
     std::string _filename;
+    int _index = 0;
 
     std::string _encoderPath = "JUCE/examples/CMake/BeatBox/encoderOlesia15_r50_4.pt";
     std::string _decoderPath = "JUCE/examples/CMake/BeatBox/gen_noattr_128.pt";
