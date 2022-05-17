@@ -1,7 +1,7 @@
-#include "MainComponent.h"
+#include "ProcessorComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent()
+ProcessorComponent::ProcessorComponent()
     : _state(Stopped)
 {
     addAndMakeVisible(&_openButton);
@@ -35,14 +35,14 @@ MainComponent::MainComponent()
     startTimer (20);
 }
 
-MainComponent::~MainComponent()
+ProcessorComponent::~ProcessorComponent()
 {
     // This shuts down the audio device and clears the audio source.
     shutdownAudio();
 }
 
 //==============================================================================
-void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
+void ProcessorComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
     // This function will be called when the audio device is started, or when
     // its settings (i.e. sample rate, block size, etc) are changed.
@@ -54,7 +54,7 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
     _transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
 
-void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill)
+void ProcessorComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill)
 {
     // Your audio-processing code goes here!
 
@@ -71,7 +71,7 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo &buffer
     _transportSource.getNextAudioBlock(bufferToFill);
 }
 
-void MainComponent::releaseResources()
+void ProcessorComponent::releaseResources()
 {
     // This will be called when the audio device stops, or when it is being
     // restarted due to a setting change.
@@ -81,15 +81,15 @@ void MainComponent::releaseResources()
 }
 
 //==============================================================================
-void MainComponent::paint(juce::Graphics &g)
+void ProcessorComponent::paint(juce::Graphics &g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 }
 
-void MainComponent::resized()
+void ProcessorComponent::resized()
 {
-    // This is called when the MainComponent is resized.
+    // This is called when the ProcessorComponent is resized.
     // If you add any child components, this is where you should
     // update their positions.
     _openButton.setBounds(10, 10, getWidth() - 20, 20);
@@ -98,7 +98,7 @@ void MainComponent::resized()
     _currentPositionLabel.setBounds(10, 130, getWidth() - 20, 20);
 }
 
-void MainComponent::timerCallback()
+void ProcessorComponent::timerCallback()
 {
     if (_transportSource.isPlaying())
     {
@@ -118,7 +118,7 @@ void MainComponent::timerCallback()
     }
 }
 
-void MainComponent::changeListenerCallback(juce::ChangeBroadcaster *source)
+void ProcessorComponent::changeListenerCallback(juce::ChangeBroadcaster *source)
 {
     if (source == &_transportSource)
     {

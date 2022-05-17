@@ -19,12 +19,12 @@
 */
 
 //==============================================================================
-class MainComponent : public juce::AudioAppComponent, public juce::ChangeListener, public juce::Timer
+class ProcessorComponent : public juce::AudioAppComponent, public juce::ChangeListener, public juce::Timer
 {
 public:
-    MainComponent();
+    ProcessorComponent();
 
-    ~MainComponent() override;
+    ~ProcessorComponent() override;
 
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
 
@@ -45,7 +45,6 @@ private:
         Starting,
         Playing,
         Stopping,
-        Pause
     };
 
     void changeState(TransportState newState)
@@ -56,12 +55,7 @@ private:
 
             switch (_state)
             {
-            case Stopped: // Is Paused in reality
-                _stopButton.setEnabled(false);
-                _playButton.setEnabled(true);
-                break;
-
-            case Pause: // Is Paused in reality
+            case Stopped:
                 _stopButton.setEnabled(false);
                 _playButton.setEnabled(true);
                 break;
@@ -97,7 +91,7 @@ private:
             {
 
                 auto* reader = _formatManager.createReaderFor (file);
-                _filename = file.getFileName().toStdString();
+                _filename = file.getFileNameWithoutExtension().toStdString();
 
                 juce::AudioSampleBuffer buffer(1, reader->lengthInSamples);
 
@@ -151,10 +145,9 @@ private:
                     std::cout << "Size: " << _samplesTab.size() << std::endl;
 
                     saveTransferredWavFile(_samplesTab);
-                    // saveOriginWavFile();
-
                 }
-            } });
+            }
+        });
         return;
     }
 
@@ -190,10 +183,9 @@ private:
     void saveTransferredWavFile([[maybe_unused]] std::vector<std::vector<float>> samplesTab)
     {
         juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-transferred" + ".wav");
+        Array<float> array;
 
         fillEncodedSamples();
-
-        Array<float> array;
 
         for (auto it : _encodedAudioTimeSeries)
             array.add(it);
@@ -218,10 +210,10 @@ private:
         }
     }
 
-    void saveSamplesWavFile(int sampleIndex)
+    void saveSamplesWavFile(long unsigned int sampleIndex)
     {
         juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-sample" + std::to_string(sampleIndex) + ".wav");
-        Array<float> array(transferSample(_samplesTab[sampleIndex]));
+        Array<float> array(transferSample(_samplesTab.at(sampleIndex)));
         AudioBuffer<float> buffer(2, 24575);
 
         for (int index = 0; index < array.size(); index += 1)
@@ -231,8 +223,8 @@ private:
         std::unique_ptr<juce::AudioFormatWriter> writer;
         writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
                                             44100.0,
-                                            buffer.getNumChannels(),
-                                            24,
+                                            1,
+                                            16,
                                             {},
                                             0));
         if (writer != nullptr)
@@ -252,9 +244,10 @@ private:
         _encodedAudioTimeSeries.resize(_audioTimeSeries.size());
         std::fill(_encodedAudioTimeSeries.begin(), _encodedAudioTimeSeries.end(), 0.0f);
 
-        for (int index = 0; index < _startEnd.size(); index += 1) {
-
-            for (int sampleIndex = 0; sampleIndex < 24575; sampleIndex += 1) {
+        for (long unsigned int index = 0; index < _startEnd.size(); index += 1)
+        {
+            for (long unsigned int sampleIndex = 0; sampleIndex < 24575; sampleIndex += 1)
+            {
                 _encodedAudioTimeSeries[_startEnd.at(index).first + sampleIndex] = encodedSamplesTab[index][sampleIndex];
             }
         }
@@ -327,7 +320,8 @@ private:
 
         for (long unsigned int index = 0; index < onsets.size() - 1; index++)
         {
-            if ((_onsets[index] > onsets[index + 1]) && (onsets[index] > onsets[index - 1]) && (index - last_peak > 0))
+            if ((std::distance(onsets.begin() - _smoothness, std::max_element(onsets.begin() - _smoothness, onsets.end()) + _smoothness) > (long int)index
+                && (index - last_peak > 0)))
             {
                 _peaks.push_back(index);
                 _peaksValues.push_back(onsets[index]);
@@ -372,21 +366,14 @@ private:
         changeState(Stopping);
     }
 
-    void pauseButtonClicked()
-    {
-        changeState(Pause);
-    }
-
     //==========================================================================
     juce::TextButton _openButton;
     juce::TextButton _playButton;
     juce::TextButton _stopButton;
-    juce::TextButton _pauseButton; // Need to add the button to pause music
     juce::Label _currentPositionLabel;
 
     std::unique_ptr<juce::FileChooser> _fileChooser;
 
-    juce::AudioSampleBuffer _buffer;
     std::vector<float> _audioTimeSeries;
     std::vector<float> _encodedAudioTimeSeries;
 
@@ -413,14 +400,14 @@ private:
     int _numberOfClasses = 128;
     int _numberOfDimensions = 3;
 
-    float _preEnergySum = 0.0;
+    int _smoothness = 60;
+
+    int _drumify = 0;
 
     juce::AudioFormatManager _formatManager;
     std::unique_ptr<juce::AudioFormatReaderSource> _readerSource;
     juce::AudioTransportSource _transportSource;
     TransportState _state;
 
-    std::unique_ptr<juce::AudioFormatWriter> _writer;
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ProcessorComponent)
 };

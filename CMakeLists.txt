@@ -45,7 +45,7 @@ juce_generate_juce_header(BeatBox)
 
 target_sources(BeatBox PRIVATE
     Source/Main.cpp
-    Source/MainComponent.cpp)
+    Source/ProcessorComponent.cpp)
 
 target_compile_definitions(BeatBox PRIVATE
     PIP_JUCE_EXAMPLES_DIRECTORY_STRING="${JUCE_SOURCE_DIR}/examples"
