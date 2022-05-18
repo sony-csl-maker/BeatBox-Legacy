@@ -36,7 +36,7 @@ GuiComponent::GuiComponent ()
 
     smoothNessSlider.reset (new Slider ("smoothness"));
     addAndMakeVisible (smoothNessSlider.get());
-    smoothNessSlider->setRange (0, 10, 0);
+    smoothNessSlider->setRange (0, 10, 0.01);
     smoothNessSlider->setSliderStyle (Slider::Rotary);
     smoothNessSlider->setTextBoxStyle (Slider::TextBoxLeft, false, 80, 20);
     smoothNessSlider->setColour (Slider::backgroundColourId, Colour (0xffe9edee));
@@ -53,14 +53,14 @@ GuiComponent::GuiComponent ()
 
     convertBtn->setBounds (200, 480, 150, 22);
 
-    dumifyBtn.reset (new ToggleButton ("dumify-toggle"));
-    addAndMakeVisible (dumifyBtn.get());
-    dumifyBtn->setButtonText (TRANS("dumify++"));
-    dumifyBtn->addListener (this);
+    dumifyToggle.reset (new ToggleButton ("dumify-toggle"));
+    addAndMakeVisible (dumifyToggle.get());
+    dumifyToggle->setButtonText (TRANS("dumify++"));
+    dumifyToggle->addListener (this);
 
     thresholdSlider.reset (new Slider ("threshold"));
     addAndMakeVisible (thresholdSlider.get());
-    thresholdSlider->setRange (0, 10, 0);
+    thresholdSlider->setRange (0, 10, 0.01);
     thresholdSlider->setSliderStyle (Slider::Rotary);
     thresholdSlider->setTextBoxStyle (Slider::TextBoxRight, false, 80, 20);
     thresholdSlider->setColour (Slider::backgroundColourId, Colours::white);
@@ -106,21 +106,21 @@ GuiComponent::GuiComponent ()
 
     FileBtn->setBounds (200, 56, 150, 22);
 
-    playBtn.reset (new TextButton ("play"));
-    addAndMakeVisible (playBtn.get());
-    playBtn->setButtonText (TRANS("Play"));
-    playBtn->addListener (this);
-    playBtn->setColour (TextButton::buttonColourId, Colour (0xff068603));
+    playOrigBtn.reset (new TextButton ("play"));
+    addAndMakeVisible (playOrigBtn.get());
+    playOrigBtn->setButtonText (TRANS("Play"));
+    playOrigBtn->addListener (this);
+    playOrigBtn->setColour (TextButton::buttonColourId, Colour (0xff068603));
 
-    playBtn->setBounds (504, 160, 64, 22);
+    playOrigBtn->setBounds (504, 160, 64, 22);
 
-    PauseBtn.reset (new TextButton ("pause"));
-    addAndMakeVisible (PauseBtn.get());
-    PauseBtn->setButtonText (TRANS("Pause"));
-    PauseBtn->addListener (this);
-    PauseBtn->setColour (TextButton::buttonColourId, Colour (0xffa90000));
+    pauseOrigBtn.reset (new TextButton ("pause"));
+    addAndMakeVisible (pauseOrigBtn.get());
+    pauseOrigBtn->setButtonText (TRANS("Pause"));
+    pauseOrigBtn->addListener (this);
+    pauseOrigBtn->setColour (TextButton::buttonColourId, Colour (0xffa90000));
 
-    PauseBtn->setBounds (504, 200, 64, 22);
+    pauseOrigBtn->setBounds (504, 200, 64, 22);
 
     playConvertBtn.reset (new TextButton ("play"));
     addAndMakeVisible (playConvertBtn.get());
@@ -130,13 +130,21 @@ GuiComponent::GuiComponent ()
 
     playConvertBtn->setBounds (507, 602, 61, 22);
 
-    PauseConvertBtn.reset (new TextButton ("pause"));
-    addAndMakeVisible (PauseConvertBtn.get());
-    PauseConvertBtn->setButtonText (TRANS("Pause"));
-    PauseConvertBtn->addListener (this);
-    PauseConvertBtn->setColour (TextButton::buttonColourId, Colour (0xffa90000));
+    pauseConvertBtn.reset (new TextButton ("pause"));
+    addAndMakeVisible (pauseConvertBtn.get());
+    pauseConvertBtn->setButtonText (TRANS("Pause"));
+    pauseConvertBtn->addListener (this);
+    pauseConvertBtn->setColour (TextButton::buttonColourId, Colour (0xffa90000));
 
-    PauseConvertBtn->setBounds (507, 642, 61, 22);
+    pauseConvertBtn->setBounds (507, 642, 61, 22);
+
+    downloadBtn.reset (new TextButton ("downloadBtn"));
+    addAndMakeVisible (downloadBtn.get());
+    downloadBtn->setButtonText (TRANS("Download"));
+    downloadBtn->addListener (this);
+    downloadBtn->setColour (TextButton::buttonColourId, Colours::blue);
+
+    downloadBtn->setBounds (200, 728, 150, 22);
 
 
     //[UserPreSize]
@@ -156,16 +164,17 @@ GuiComponent::~GuiComponent()
 
     smoothNessSlider = nullptr;
     convertBtn = nullptr;
-    dumifyBtn = nullptr;
+    dumifyToggle = nullptr;
     thresholdSlider = nullptr;
     smoothnessLabel = nullptr;
     thresholdLabel = nullptr;
     snareLabel = nullptr;
     FileBtn = nullptr;
-    playBtn = nullptr;
-    PauseBtn = nullptr;
+    playOrigBtn = nullptr;
+    pauseOrigBtn = nullptr;
     playConvertBtn = nullptr;
-    PauseConvertBtn = nullptr;
+    pauseConvertBtn = nullptr;
+    downloadBtn = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -217,7 +226,7 @@ void GuiComponent::resized()
     //[/UserPreResize]
 
     smoothNessSlider->setBounds (proportionOfWidth (0.5710f), proportionOfHeight (0.2550f), 176, 96);
-    dumifyBtn->setBounds (proportionOfWidth (0.6792f), proportionOfHeight (0.4061f), 96, 24);
+    dumifyToggle->setBounds (proportionOfWidth (0.6792f), proportionOfHeight (0.4061f), 96, 24);
     thresholdSlider->setBounds (proportionOfWidth (0.5710f) + roundToInt (176 * 1.1818f), proportionOfHeight (0.2550f) + roundToInt (96 * 0.0000f), 176, 96);
     smoothnessLabel->setBounds (proportionOfWidth (0.5710f) + 80, proportionOfHeight (0.2550f) + -40, 88, 24);
     thresholdLabel->setBounds ((proportionOfWidth (0.5710f) + roundToInt (176 * 1.1818f)) + 8, (proportionOfHeight (0.2550f) + roundToInt (96 * 0.0000f)) + -40, 88, 24);
@@ -255,35 +264,40 @@ void GuiComponent::buttonClicked (Button* buttonThatWasClicked)
         //[UserButtonCode_convertBtn] -- add your button handler code here..
         //[/UserButtonCode_convertBtn]
     }
-    else if (buttonThatWasClicked == dumifyBtn.get())
+    else if (buttonThatWasClicked == dumifyToggle.get())
     {
-        //[UserButtonCode_dumifyBtn] -- add your button handler code here..
-        //[/UserButtonCode_dumifyBtn]
+        //[UserButtonCode_dumifyToggle] -- add your button handler code here..
+        //[/UserButtonCode_dumifyToggle]
     }
     else if (buttonThatWasClicked == FileBtn.get())
     {
         //[UserButtonCode_FileBtn] -- add your button handler code here..
         //[/UserButtonCode_FileBtn]
     }
-    else if (buttonThatWasClicked == playBtn.get())
+    else if (buttonThatWasClicked == playOrigBtn.get())
     {
-        //[UserButtonCode_playBtn] -- add your button handler code here..
-        //[/UserButtonCode_playBtn]
+        //[UserButtonCode_playOrigBtn] -- add your button handler code here..
+        //[/UserButtonCode_playOrigBtn]
     }
-    else if (buttonThatWasClicked == PauseBtn.get())
+    else if (buttonThatWasClicked == pauseOrigBtn.get())
     {
-        //[UserButtonCode_PauseBtn] -- add your button handler code here..
-        //[/UserButtonCode_PauseBtn]
+        //[UserButtonCode_pauseOrigBtn] -- add your button handler code here..
+        //[/UserButtonCode_pauseOrigBtn]
     }
     else if (buttonThatWasClicked == playConvertBtn.get())
     {
         //[UserButtonCode_playConvertBtn] -- add your button handler code here..
         //[/UserButtonCode_playConvertBtn]
     }
-    else if (buttonThatWasClicked == PauseConvertBtn.get())
+    else if (buttonThatWasClicked == pauseConvertBtn.get())
     {
-        //[UserButtonCode_PauseConvertBtn] -- add your button handler code here..
-        //[/UserButtonCode_PauseConvertBtn]
+        //[UserButtonCode_pauseConvertBtn] -- add your button handler code here..
+        //[/UserButtonCode_pauseConvertBtn]
+    }
+    else if (buttonThatWasClicked == downloadBtn.get())
+    {
+        //[UserButtonCode_downloadBtn] -- add your button handler code here..
+        //[/UserButtonCode_downloadBtn]
     }
 
     //[UserbuttonClicked_Post]
@@ -317,13 +331,13 @@ BEGIN_JUCER_METADATA
   <SLIDER name="smoothness" id="8ffb4b136762fc90" memberName="smoothNessSlider"
           virtualName="" explicitFocusOrder="0" pos="57.1% 25.502% 176 96"
           bkgcol="ffe9edee" trackcol="ffffffff" rotarysliderfill="ffffffff"
-          rotaryslideroutline="ff000000" min="0.0" max="10.0" int="0.0"
+          rotaryslideroutline="ff000000" min="0.0" max="10.0" int="0.01"
           style="Rotary" textBoxPos="TextBoxLeft" textBoxEditable="1" textBoxWidth="80"
           textBoxHeight="20" skewFactor="1.0" needsCallback="1"/>
   <TEXTBUTTON name="Convert-button" id="e9200f066f3fc373" memberName="convertBtn"
               virtualName="" explicitFocusOrder="0" pos="200 480 150 22" bgColOff="ff2f31ba"
               buttonText="Convert" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
-  <TOGGLEBUTTON name="dumify-toggle" id="9a95dc488e8dd025" memberName="dumifyBtn"
+  <TOGGLEBUTTON name="dumify-toggle" id="9a95dc488e8dd025" memberName="dumifyToggle"
                 virtualName="" explicitFocusOrder="0" pos="67.919% 40.614% 96 24"
                 buttonText="dumify++" connectedEdges="0" needsCallback="1" radioGroupId="0"
                 state="0"/>
@@ -331,7 +345,7 @@ BEGIN_JUCER_METADATA
           virtualName="" explicitFocusOrder="0" pos="118.182% 0% 176 96"
           posRelativeX="8ffb4b136762fc90" posRelativeY="8ffb4b136762fc90"
           bkgcol="ffffffff" trackcol="ffffffff" rotarysliderfill="ffffffff"
-          rotaryslideroutline="ff000000" min="0.0" max="10.0" int="0.0"
+          rotaryslideroutline="ff000000" min="0.0" max="10.0" int="0.01"
           style="Rotary" textBoxPos="TextBoxRight" textBoxEditable="1"
           textBoxWidth="80" textBoxHeight="20" skewFactor="1.0" needsCallback="1"/>
   <LABEL name="smoothnessl" id="8996091298f6f4bb" memberName="smoothnessLabel"
@@ -355,18 +369,21 @@ BEGIN_JUCER_METADATA
   <TEXTBUTTON name="File" id="1957e99fe10396a7" memberName="FileBtn" virtualName=""
               explicitFocusOrder="0" pos="200 56 150 22" bgColOff="ff3b3b3b"
               buttonText="Open..." connectedEdges="0" needsCallback="1" radioGroupId="0"/>
-  <TEXTBUTTON name="play" id="914cdc77d0517b4f" memberName="playBtn" virtualName=""
+  <TEXTBUTTON name="play" id="914cdc77d0517b4f" memberName="playOrigBtn" virtualName=""
               explicitFocusOrder="0" pos="504 160 64 22" bgColOff="ff068603"
               buttonText="Play" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
-  <TEXTBUTTON name="pause" id="76478d894edb4b85" memberName="PauseBtn" virtualName=""
-              explicitFocusOrder="0" pos="504 200 64 22" bgColOff="ffa90000"
+  <TEXTBUTTON name="pause" id="76478d894edb4b85" memberName="pauseOrigBtn"
+              virtualName="" explicitFocusOrder="0" pos="504 200 64 22" bgColOff="ffa90000"
               buttonText="Pause" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="play" id="aa3e6b34fe2bbd3" memberName="playConvertBtn"
               virtualName="" explicitFocusOrder="0" pos="507 602 61 22" bgColOff="ff068603"
               buttonText="Play" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
-  <TEXTBUTTON name="pause" id="6d50dbac2a08c940" memberName="PauseConvertBtn"
+  <TEXTBUTTON name="pause" id="6d50dbac2a08c940" memberName="pauseConvertBtn"
               virtualName="" explicitFocusOrder="0" pos="507 642 61 22" bgColOff="ffa90000"
               buttonText="Pause" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
+  <TEXTBUTTON name="downloadBtn" id="cb7d643fc41c37d5" memberName="downloadBtn"
+              virtualName="" explicitFocusOrder="0" pos="200 728 150 22" bgColOff="ff0000ff"
+              buttonText="Download" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

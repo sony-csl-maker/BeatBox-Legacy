@@ -60,16 +60,17 @@ private:
     //==============================================================================
     std::unique_ptr<Slider> smoothNessSlider;
     std::unique_ptr<TextButton> convertBtn;
-    std::unique_ptr<ToggleButton> dumifyBtn;
+    std::unique_ptr<ToggleButton> dumifyToggle;
     std::unique_ptr<Slider> thresholdSlider;
     std::unique_ptr<Label> smoothnessLabel;
     std::unique_ptr<Label> thresholdLabel;
     std::unique_ptr<Label> snareLabel;
     std::unique_ptr<TextButton> FileBtn;
-    std::unique_ptr<TextButton> playBtn;
-    std::unique_ptr<TextButton> PauseBtn;
+    std::unique_ptr<TextButton> playOrigBtn;
+    std::unique_ptr<TextButton> pauseOrigBtn;
     std::unique_ptr<TextButton> playConvertBtn;
-    std::unique_ptr<TextButton> PauseConvertBtn;
+    std::unique_ptr<TextButton> pauseConvertBtn;
+    std::unique_ptr<TextButton> downloadBtn;
 
 
     //==============================================================================
