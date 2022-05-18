@@ -12,6 +12,9 @@
 // libtorch
 #include <torch/script.h>
 
+// BeatBoxComponent
+#include "BeatBoxComponent.h"
+
 //==============================================================================
 /*
     This component lives inside our window, and this is where you should put all
@@ -89,9 +92,8 @@ private:
 
             if (file != juce::File{})
             {
-
                 auto* reader = _formatManager.createReaderFor (file);
-                _filename = file.getFileNameWithoutExtension().toStdString();
+                std::string filename = file.getFileNameWithoutExtension().toStdString();
 
                 juce::AudioSampleBuffer buffer(1, reader->lengthInSamples);
 
@@ -105,255 +107,21 @@ private:
                     buffer.setSize ((int) reader->numChannels, (int) reader->lengthInSamples);
                     reader->read (&buffer, 0, (int) reader->lengthInSamples, 0, true, true);
 
-                    for (int index = 0; index < buffer.getNumSamples(); index += 1)
-                        _audioTimeSeries.push_back(buffer.getSample(0, index));
+                    _beatBox->fillAudioTimeSeries(buffer);
 
-                    int prevSampleIndex = 0;
-                    int sampleIndex = (int)reader->sampleRate / 100;
+                    _beatBox->onsetDetection(reader, buffer);
 
-                    try {
-                        _encoder = torch::jit::load(_encoderPath);
-                        _decoder = torch::jit::load(_decoderPath);
-                    } catch (const c10::Error& e) {
-                        std::cerr << "Errors(s): " << e.what() << "\n";
-                        return (1);
-                    }
+                    _beatBox->findPeaks();
 
-                    int frameSize = (int)reader->sampleRate / 100;
-                    int sampleRate = 44100;
-                    Gist<float> gist(frameSize, sampleRate);
+                    _beatBox->findStartEndOnset();
 
-                    for (int index = 0; index < buffer.getNumSamples(); index += 1) {
+                    _beatBox->transferTrack();
 
-                        if (index % (int)reader->sampleRate / 100 == 0) {
-                            std::vector<float> sample(_audioTimeSeries.begin() + prevSampleIndex, _audioTimeSeries.begin() + sampleIndex);
-                            gist.processAudioFrame(sample);
-                            _onsets.push_back(gist.energyDifference());
-                            prevSampleIndex += (int)reader->sampleRate / 100;
-                            sampleIndex += (int)reader->sampleRate / 100;
-                        }
-                    }
-
-                    findPeaks(_onsets);
-                    for (unsigned int index = 0; index < _peaks.size() - 1; index += 1)
-                        _peaks[index] *= 441;
-
-                    findStartEndOnset(_audioTimeSeries, _peaks);
-
-                    transferTrack(_startEnd);
-
-                    std::cout << "Size: " << _samplesTab.size() << std::endl;
-
-                    saveTransferredWavFile(_samplesTab);
+                    _beatBox->saveTransferredFile();
                 }
             }
         });
         return;
-    }
-
-    // void saveOriginWavFile()
-    // {
-    //     juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-orig" + ".wav");
-
-    //     Array<float> array;
-
-    //     for (auto it : _audioTimeSeries)
-    //         array.add(it);
-
-    //     AudioBuffer<float> buffer(2, _audioTimeSeries.size());
-
-    //     for (int index = 0; index < array.size(); index += 1)
-    //         buffer.setSample(0, index, array[index]);
-
-    //     juce::WavAudioFormat format;
-    //     std::unique_ptr<juce::AudioFormatWriter> writer;
-    //     writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
-    //                                         44100.0,
-    //                                         buffer.getNumChannels(),
-    //                                         16,
-    //                                         {},
-    //                                         0));
-    //     if (writer != nullptr)
-    //     {
-    //         std::cout << "Writing Origin file..." << std::endl;
-    //         writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
-    //     }
-    // }
-
-    void saveTransferredWavFile([[maybe_unused]] std::vector<std::vector<float>> samplesTab)
-    {
-        juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-transferred" + ".wav");
-        Array<float> array;
-
-        fillEncodedSamples();
-
-        for (auto it : _encodedAudioTimeSeries)
-            array.add(it);
-
-        AudioBuffer<float> buffer(1, _encodedAudioTimeSeries.size());
-
-        for (int index = 0; index < array.size(); index += 1)
-            buffer.setSample(0, index, array[index]);
-
-        juce::WavAudioFormat format;
-        std::unique_ptr<juce::AudioFormatWriter> writer;
-        writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
-                                            44100.0,
-                                            1,
-                                            16,
-                                            {},
-                                            0));
-        if (writer != nullptr)
-        {
-            std::cout << "Writing Transferred file..." << std::endl;
-            writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
-        }
-    }
-
-    void saveSamplesWavFile(long unsigned int sampleIndex)
-    {
-        juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-sample" + std::to_string(sampleIndex) + ".wav");
-        Array<float> array(transferSample(_samplesTab.at(sampleIndex)));
-        AudioBuffer<float> buffer(2, 24575);
-
-        for (int index = 0; index < array.size(); index += 1)
-            buffer.setSample(0, index, array[index]);
-
-        juce::WavAudioFormat format;
-        std::unique_ptr<juce::AudioFormatWriter> writer;
-        writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
-                                            44100.0,
-                                            1,
-                                            16,
-                                            {},
-                                            0));
-        if (writer != nullptr)
-        {
-            std::cout << "Writing Samples file..." << std::endl;
-            writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
-        }
-    }
-
-    void fillEncodedSamples()
-    {
-        std::vector<Array<float>> encodedSamplesTab;
-
-        for (size_t sampleIndex = 0; sampleIndex < _samplesTab.size(); sampleIndex += 1)
-            encodedSamplesTab.push_back(transferSample(_samplesTab[sampleIndex]));
-
-        _encodedAudioTimeSeries.resize(_audioTimeSeries.size());
-        std::fill(_encodedAudioTimeSeries.begin(), _encodedAudioTimeSeries.end(), 0.0f);
-
-        for (long unsigned int index = 0; index < _startEnd.size(); index += 1)
-        {
-            for (long unsigned int sampleIndex = 0; sampleIndex < 24575; sampleIndex += 1)
-            {
-                _encodedAudioTimeSeries[_startEnd.at(index).first + sampleIndex] = encodedSamplesTab[index][sampleIndex];
-            }
-        }
-    }
-
-    Array<float> transferSample(std::vector<float> sample)
-    {
-        Array<float> transform;
-
-        for (auto it : sample)
-            transform.add(it);
-
-        Array<float> encodedSample = encode(transform, 24575);
-
-        return (decode(encodedSample));
-    }
-
-    Array<float> encode(Array<float> audioBuffer, const int audioLength)
-    {
-        torch::Tensor tensor_wav = torch::from_blob(audioBuffer.data(), {1, audioLength});
-
-        std::vector<torch::jit::IValue> inputs;
-        inputs.push_back(tensor_wav);
-
-        torch::NoGradGuard no_grad;
-        torch::Tensor encoderOutput = _encoder.forward(inputs).toTensor();
-
-        float *valuePtr = encoderOutput.data_ptr<float>();
-        Array<float> arrayValues(valuePtr, _numberOfDimensions + _numberOfClasses);
-
-        _newZ.resize(_numberOfDimensions);
-
-        for (int idx = 0; idx < _numberOfDimensions; idx++)
-        {
-            _newZ.set(idx, arrayValues[idx]);
-        }
-
-        _normalizedClasses.resize(_numberOfClasses);
-
-        for (int index = 0; index < _numberOfClasses; index++)
-        {
-            _normalizedClasses.set(index, arrayValues[index + _numberOfDimensions]);
-        }
-        return (arrayValues);
-    }
-
-    Array<float> decode(Array<float> z_c_array_ptr)
-    {
-        torch::Tensor tensor_z_c = torch::from_blob(z_c_array_ptr.data(), {1, _numberOfDimensions + _numberOfClasses}).clone();
-
-        std::vector<torch::jit::IValue> inputs;
-        inputs.push_back(tensor_z_c);
-
-        torch::NoGradGuard no_grad;
-        torch::Tensor decoderOutput = _decoder.forward(inputs).toTensor();
-
-        float *value = decoderOutput.data_ptr<float>();
-        int sizeWav = 24575;
-        Array<float> arrayWav(value, sizeWav);
-
-        std::cout << "Decodede Sample number " << std::to_string(_index) << ": " << arrayWav.size() << std::endl;
-        _index += 1;
-
-        return (arrayWav);
-    }
-
-    void findPeaks(std::vector<float> onsets)
-    {
-        float last_peak = -1e10;
-
-        for (long unsigned int index = 0; index < onsets.size() - 1; index++)
-        {
-            if ((std::distance(onsets.begin() - _smoothness, std::max_element(onsets.begin() - _smoothness, onsets.end()) + _smoothness) > (long int)index
-                && (index - last_peak > 0)))
-            {
-                _peaks.push_back(index);
-                _peaksValues.push_back(onsets[index]);
-                last_peak = index;
-            }
-        }
-    }
-
-    void findStartEndOnset(std::vector<float> audio, std::vector<float> onsetPeaks)
-    {
-        long unsigned int length = 24575;
-
-        for (long unsigned int index = 0; index < onsetPeaks.size() - 1; index++)
-        {
-            if ((onsetPeaks[index] + length) < audio.size())
-            {
-                _startEnd.push_back({onsetPeaks[index], onsetPeaks[index] + length});
-            }
-        }
-    }
-
-    void transferTrack(std::vector<std::pair<float, float>> startEnd)
-    {
-        int index = 0;
-
-        for (auto it : startEnd)
-        {
-            std::vector<float> sample(_audioTimeSeries.begin() + it.first, _audioTimeSeries.begin() + it.second);
-            std::cout << "[TransferTrack] NON ENCODED : for sample " << std::to_string(index) << " " << it.first << " - " << it.second << std::endl;
-            _samplesTab.push_back(sample); // 24575
-            index += 1;
-        }
     }
 
     void playButtonClicked()
@@ -374,40 +142,12 @@ private:
 
     std::unique_ptr<juce::FileChooser> _fileChooser;
 
-    std::vector<float> _audioTimeSeries;
-    std::vector<float> _encodedAudioTimeSeries;
-
-    std::vector<float> _onsets;
-    std::vector<float> _peaks;
-    std::vector<float> _peaksValues;
-
-    std::vector<std::pair<float, float>> _startEnd;
-
-    std::vector<std::vector<float>> _samplesTab;
-    std::vector<std::vector<float>> _encodedSamplesTab;
-
-    std::string _filename;
-    int _index = 0;
-
-    std::string _encoderPath = "JUCE/examples/CMake/BeatBox/encoderOlesia15_r50_4.pt";
-    std::string _decoderPath = "JUCE/examples/CMake/BeatBox/gen_noattr_128.pt";
-    torch::jit::script::Module _encoder;
-    torch::jit::script::Module _decoder;
-
-    Array<float> _newZ;
-    Array<float> _normalizedClasses;
-
-    int _numberOfClasses = 128;
-    int _numberOfDimensions = 3;
-
-    int _smoothness = 60;
-
-    int _drumify = 0;
-
     juce::AudioFormatManager _formatManager;
     std::unique_ptr<juce::AudioFormatReaderSource> _readerSource;
     juce::AudioTransportSource _transportSource;
     TransportState _state;
+
+    std::unique_ptr<BeatBoxComponent> _beatBox = std::make_unique<BeatBoxComponent>();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ProcessorComponent)
 };
