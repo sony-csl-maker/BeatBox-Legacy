@@ -21,6 +21,8 @@
 
 //[Headers]     -- You can add your own extra header files here --
 #include <JuceHeader.h>
+
+#include "ProcessorComponent.h"
 //[/Headers]
 
 
@@ -55,6 +57,8 @@ public:
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
+    std::unique_ptr<ProcessorComponent> _processor = std::make_unique<ProcessorComponent>();
+    std::unique_ptr<BeatBoxComponent> _beatBox = std::make_unique<BeatBoxComponent>();
     //[/UserVariables]
 
     //==============================================================================

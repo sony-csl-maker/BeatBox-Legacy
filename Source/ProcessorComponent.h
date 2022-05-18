@@ -41,7 +41,6 @@ public:
     void changeListenerCallback(juce::ChangeBroadcaster *source) override;
     void timerCallback() override;
 
-private:
     enum TransportState
     {
         Stopped,
@@ -92,36 +91,48 @@ private:
 
             if (file != juce::File{})
             {
-                auto* reader = _formatManager.createReaderFor (file);
+                _reader = _formatManager.createReaderFor (file);
                 std::string filename = file.getFileNameWithoutExtension().toStdString();
 
-                juce::AudioSampleBuffer buffer(1, reader->lengthInSamples);
+                _beatBox->setFilename(filename);
 
-                if (reader != nullptr)
+                juce::AudioSampleBuffer buffer(1, _reader->lengthInSamples);
+                _buffer = buffer;
+
+                if (_reader != nullptr)
                 {
-                    auto newSource = std::make_unique<juce::AudioFormatReaderSource> (reader, true);
-                    _transportSource.setSource (newSource.get(), 0, nullptr, reader->sampleRate);
+                    auto newSource = std::make_unique<juce::AudioFormatReaderSource> (_reader, true);
+                    _transportSource.setSource (newSource.get(), 0, nullptr, _reader->sampleRate);
                     _playButton.setEnabled (true);
                     _readerSource.reset (newSource.release());
 
-                    buffer.setSize ((int) reader->numChannels, (int) reader->lengthInSamples);
-                    reader->read (&buffer, 0, (int) reader->lengthInSamples, 0, true, true);
-
-                    _beatBox->fillAudioTimeSeries(buffer);
-
-                    _beatBox->onsetDetection(reader, buffer);
-
-                    _beatBox->findPeaks();
-
-                    _beatBox->findStartEndOnset();
-
-                    _beatBox->transferTrack();
-
-                    _beatBox->saveTransferredFile();
+                    _buffer.setSize ((int) _reader->numChannels, (int) _reader->lengthInSamples);
+                    _reader->read (&_buffer, 0, (int) _reader->lengthInSamples, 0, true, true);
                 }
-            }
-        });
+            } });
         return;
+    }
+
+    void convertTrack()
+    {
+        _beatBox->setTorchModules();
+
+        _beatBox->fillAudioTimeSeries(_buffer);
+
+        _beatBox->onsetDetection(_reader, _buffer);
+
+        _beatBox->findPeaks();
+
+        _beatBox->findStartEndOnset();
+
+        _beatBox->transferTrack();
+
+        _beatBox->saveTransferredFile();
+    }
+
+    void playConvertedTrack()
+    {
+        // do something here please
     }
 
     void playButtonClicked()
@@ -134,6 +145,7 @@ private:
         changeState(Stopping);
     }
 
+private:
     //==========================================================================
     juce::TextButton _openButton;
     juce::TextButton _playButton;
@@ -142,10 +154,17 @@ private:
 
     std::unique_ptr<juce::FileChooser> _fileChooser;
 
+    // Original File
     juce::AudioFormatManager _formatManager;
     std::unique_ptr<juce::AudioFormatReaderSource> _readerSource;
     juce::AudioTransportSource _transportSource;
     TransportState _state;
+
+    juce::AudioFormatReader *_reader;
+    juce::AudioSampleBuffer _buffer;
+
+    juce::AudioFormatReader *_readerTransformed;
+    juce::AudioSampleBuffer _bufferTransformed;
 
     std::unique_ptr<BeatBoxComponent> _beatBox = std::make_unique<BeatBoxComponent>();
 

@@ -16,9 +16,6 @@ public:
     BeatBoxComponent(void);
     ~BeatBoxComponent(void);
 
-    void setFilename(void);
-    std::string getFilename(void);
-
     void findPeaks();
 
     Array<float> encodeSample(Array<float> audioBuffer, const int audioLength);
@@ -39,6 +36,7 @@ public:
     void fillAudioTimeSeries(juce::AudioSampleBuffer buffer);
     void onsetDetection(juce::AudioFormatReader *reader, juce::AudioSampleBuffer buffer);
     void setTorchModules(void);
+    void setFilename(std::string filename);
 
     // getters/setters
     std::vector<float> getEncodedAudioTimeSeries() { return _encodedAudioTimeSeries; };
@@ -47,6 +45,8 @@ public:
 
     Array<float> getZ() { return _newZ; };
     Array<float> getC() { return _normalizedClasses; };
+
+    std::vector<float> getTransferredTrack() { return _encodedAudioTimeSeries; };
 
 protected:
 private:

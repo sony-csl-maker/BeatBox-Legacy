@@ -35,7 +35,7 @@ void BeatBoxComponent::saveOriginFile()
     std::unique_ptr<juce::AudioFormatWriter> writer;
     writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
                                         44100.0,
-                                        buffer.getNumChannels(),
+                                        1,
                                         16,
                                         {},
                                         0));
@@ -266,4 +266,9 @@ void BeatBoxComponent::setTorchModules()
         std::cerr << "Errors(s): " << e.what() << "\n";
         exit(1);
     }
+}
+
+void BeatBoxComponent::setFilename(std::string filename)
+{
+    _filename = filename;
 }

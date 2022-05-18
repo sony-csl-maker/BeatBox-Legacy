@@ -100,7 +100,7 @@ GuiComponent::GuiComponent ()
 
     FileBtn.reset (new TextButton ("File"));
     addAndMakeVisible (FileBtn.get());
-    FileBtn->setButtonText (TRANS("Open..."));
+    FileBtn->setButtonText (TRANS("Open from filesystem ..."));
     FileBtn->addListener (this);
     FileBtn->setColour (TextButton::buttonColourId, Colour (0xff3b3b3b));
 
@@ -262,6 +262,7 @@ void GuiComponent::buttonClicked (Button* buttonThatWasClicked)
     if (buttonThatWasClicked == convertBtn.get())
     {
         //[UserButtonCode_convertBtn] -- add your button handler code here..
+        _processor->convertTrack();
         //[/UserButtonCode_convertBtn]
     }
     else if (buttonThatWasClicked == dumifyToggle.get())
@@ -272,16 +273,19 @@ void GuiComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == FileBtn.get())
     {
         //[UserButtonCode_FileBtn] -- add your button handler code here..
+        _processor->openButtonClicked();
         //[/UserButtonCode_FileBtn]
     }
     else if (buttonThatWasClicked == playOrigBtn.get())
     {
         //[UserButtonCode_playOrigBtn] -- add your button handler code here..
+        _processor->playButtonClicked();
         //[/UserButtonCode_playOrigBtn]
     }
     else if (buttonThatWasClicked == pauseOrigBtn.get())
     {
         //[UserButtonCode_pauseOrigBtn] -- add your button handler code here..
+        _processor->stopButtonClicked();
         //[/UserButtonCode_pauseOrigBtn]
     }
     else if (buttonThatWasClicked == playConvertBtn.get())
