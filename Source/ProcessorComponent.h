@@ -14,7 +14,6 @@
 
 // BeatBoxComponent
 #include "BeatBoxComponent.h"
-#include "ThumbnailComponent.h"
 
 //==============================================================================
 /*
@@ -118,11 +117,6 @@ public:
         return;
     }
 
-    void setFileThumbnail()
-    {
-        _thumbnail = std::make_unique<ThumbnailComponent>(_loadedFile);
-    }
-
     void loadTrackToConvert()
     {
         _beatBox->setTorchModules();
@@ -152,6 +146,11 @@ public:
     void playConvertedTrack()
     {
         // do something here please
+    }
+
+    juce::File sendFileLoaded()
+    {
+        return (_loadedFile);
     }
 
     void playButtonClicked()
@@ -188,8 +187,6 @@ private:
     juce::AudioSampleBuffer _bufferTransformed;
 
     std::unique_ptr<BeatBoxComponent> _beatBox = std::make_unique<BeatBoxComponent>();
-
-    std::unique_ptr<ThumbnailComponent> _thumbnail;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ProcessorComponent)
 };

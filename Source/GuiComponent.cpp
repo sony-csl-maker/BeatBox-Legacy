@@ -98,46 +98,6 @@ GuiComponent::GuiComponent ()
 
     snareLabel->setBounds (-104, -40, 88, 24);
 
-    FileBtn.reset (new TextButton ("File"));
-    addAndMakeVisible (FileBtn.get());
-    FileBtn->setButtonText (TRANS("Open from filesystem ..."));
-    FileBtn->addListener (this);
-    FileBtn->setColour (TextButton::buttonColourId, Colour (0xff3b3b3b));
-
-    FileBtn->setBounds (200, 56, 150, 22);
-
-    playOrigBtn.reset (new TextButton ("play"));
-    addAndMakeVisible (playOrigBtn.get());
-    playOrigBtn->setButtonText (TRANS("Play"));
-    playOrigBtn->addListener (this);
-    playOrigBtn->setColour (TextButton::buttonColourId, Colour (0xff068603));
-
-    playOrigBtn->setBounds (504, 160, 64, 22);
-
-    pauseOrigBtn.reset (new TextButton ("pause"));
-    addAndMakeVisible (pauseOrigBtn.get());
-    pauseOrigBtn->setButtonText (TRANS("Pause"));
-    pauseOrigBtn->addListener (this);
-    pauseOrigBtn->setColour (TextButton::buttonColourId, Colour (0xffa90000));
-
-    pauseOrigBtn->setBounds (504, 200, 64, 22);
-
-    playConvertBtn.reset (new TextButton ("play"));
-    addAndMakeVisible (playConvertBtn.get());
-    playConvertBtn->setButtonText (TRANS("Play"));
-    playConvertBtn->addListener (this);
-    playConvertBtn->setColour (TextButton::buttonColourId, Colour (0xff068603));
-
-    playConvertBtn->setBounds (507, 602, 61, 22);
-
-    pauseConvertBtn.reset (new TextButton ("pause"));
-    addAndMakeVisible (pauseConvertBtn.get());
-    pauseConvertBtn->setButtonText (TRANS("Pause"));
-    pauseConvertBtn->addListener (this);
-    pauseConvertBtn->setColour (TextButton::buttonColourId, Colour (0xffa90000));
-
-    pauseConvertBtn->setBounds (507, 642, 61, 22);
-
     downloadBtn.reset (new TextButton ("downloadBtn"));
     addAndMakeVisible (downloadBtn.get());
     downloadBtn->setButtonText (TRANS("Download"));
@@ -146,8 +106,11 @@ GuiComponent::GuiComponent ()
 
     downloadBtn->setBounds (200, 728, 150, 22);
 
-    // _processor->setFileThumbnail();
-    // addAndMakeVisible(_thumbnail.get()); // REUSSIR A DRAW CE PTN DE COMP -> besoin de maximus
+    _originalThumbnail.reset (new OriginalThumbnailComponent() );
+    addAndMakeVisible(_originalThumbnail.get());
+
+    _convertedThumbnail.reset (new ConvertedThumbnailComponent() );
+    addAndMakeVisible(_convertedThumbnail.get());
 
     //[UserPreSize]
     //[/UserPreSize]

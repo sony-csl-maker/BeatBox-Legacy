@@ -23,6 +23,9 @@
 #include <JuceHeader.h>
 
 #include "ProcessorComponent.h"
+
+#include "Thumbnails/OriginalThumbnailComponent.h"
+#include "Thumbnails/ConvertedThumbnailComponent.h"
 //[/Headers]
 
 
@@ -59,7 +62,8 @@ private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     std::unique_ptr<ProcessorComponent> _processor = std::make_unique<ProcessorComponent>();
 
-    std::unique_ptr<ThumbnailComponent> _thumbnail;
+    std::unique_ptr<OriginalThumbnailComponent> _originalThumbnail = std::make_unique<OriginalThumbnailComponent>();
+    std::unique_ptr<ConvertedThumbnailComponent> _convertedThumbnail = std::make_unique<ConvertedThumbnailComponent>();
     //[/UserVariables]
 
     //==============================================================================
