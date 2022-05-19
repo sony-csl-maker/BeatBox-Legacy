@@ -14,6 +14,7 @@
 
 // BeatBoxComponent
 #include "BeatBoxComponent.h"
+#include "ThumbnailComponent.h"
 
 //==============================================================================
 /*
@@ -60,6 +61,7 @@ public:
             case Stopped:
                 _stopButton.setEnabled(false);
                 _playButton.setEnabled(true);
+                _transportSource.setPosition(0.0);
                 break;
 
             case Starting:
@@ -74,6 +76,9 @@ public:
             case Stopping:
                 _transportSource.stop();
                 break;
+
+            default:
+                break;
             }
         }
     }
@@ -87,12 +92,12 @@ public:
 
         _fileChooser->launchAsync(chooserFlags, [this](const juce::FileChooser &fc)
                                   {
-            auto file = fc.getResult();
+            _loadedFile = fc.getResult();
 
-            if (file != juce::File{})
+            if (_loadedFile != juce::File{})
             {
-                _reader = _formatManager.createReaderFor (file);
-                std::string filename = file.getFileNameWithoutExtension().toStdString();
+                _reader = _formatManager.createReaderFor (_loadedFile);
+                std::string filename = _loadedFile.getFileNameWithoutExtension().toStdString();
 
                 _beatBox->setFilename(filename);
 
@@ -113,20 +118,34 @@ public:
         return;
     }
 
-    void convertTrack()
+    void setFileThumbnail()
+    {
+        _thumbnail = std::make_unique<ThumbnailComponent>(_loadedFile);
+    }
+
+    void loadTrackToConvert()
     {
         _beatBox->setTorchModules();
 
         _beatBox->fillAudioTimeSeries(_buffer);
+    }
 
+    void processTrackToConvert()
+    {
         _beatBox->onsetDetection(_reader, _buffer);
 
         _beatBox->findPeaks();
+    }
 
+    void convertAndTrasnferTrack()
+    {
         _beatBox->findStartEndOnset();
 
         _beatBox->transferTrack();
+    }
 
+    void saveTransferredFile()
+    {
         _beatBox->saveTransferredFile();
     }
 
@@ -160,6 +179,8 @@ private:
     juce::AudioTransportSource _transportSource;
     TransportState _state;
 
+    juce::File _loadedFile;
+
     juce::AudioFormatReader *_reader;
     juce::AudioSampleBuffer _buffer;
 
@@ -167,6 +188,8 @@ private:
     juce::AudioSampleBuffer _bufferTransformed;
 
     std::unique_ptr<BeatBoxComponent> _beatBox = std::make_unique<BeatBoxComponent>();
+
+    std::unique_ptr<ThumbnailComponent> _thumbnail;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ProcessorComponent)
 };

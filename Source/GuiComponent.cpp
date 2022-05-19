@@ -146,11 +146,11 @@ GuiComponent::GuiComponent ()
 
     downloadBtn->setBounds (200, 728, 150, 22);
 
+    // _processor->setFileThumbnail();
+    // addAndMakeVisible(_thumbnail.get()); // REUSSIR A DRAW CE PTN DE COMP -> besoin de maximus
 
     //[UserPreSize]
     //[/UserPreSize]
-
-    setSize (1400, 800);
 
 
     //[Constructor] You can add your own custom stuff here..
@@ -262,7 +262,9 @@ void GuiComponent::buttonClicked (Button* buttonThatWasClicked)
     if (buttonThatWasClicked == convertBtn.get())
     {
         //[UserButtonCode_convertBtn] -- add your button handler code here..
-        _processor->convertTrack();
+        _processor->loadTrackToConvert();
+        _processor->processTrackToConvert();
+        _processor->convertAndTrasnferTrack();
         //[/UserButtonCode_convertBtn]
     }
     else if (buttonThatWasClicked == dumifyToggle.get())
@@ -301,6 +303,7 @@ void GuiComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == downloadBtn.get())
     {
         //[UserButtonCode_downloadBtn] -- add your button handler code here..
+        _processor->saveTransferredFile();
         //[/UserButtonCode_downloadBtn]
     }
 
