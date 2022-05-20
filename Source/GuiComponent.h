@@ -62,12 +62,14 @@ private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     std::unique_ptr<ProcessorComponent> _processor = std::make_unique<ProcessorComponent>();
 
-    std::unique_ptr<OriginalThumbnailComponent> _originalThumbnail = std::make_unique<OriginalThumbnailComponent>();
-    std::unique_ptr<ConvertedThumbnailComponent> _convertedThumbnail = std::make_unique<ConvertedThumbnailComponent>();
+    // std::unique_ptr<OriginalThumbnailComponent> _originalThumbnail = std::make_unique<OriginalThumbnailComponent>();
+    // std::unique_ptr<ConvertedThumbnailComponent> _convertedThumbnail = std::make_unique<ConvertedThumbnailComponent>();
+    std::unique_ptr<OriginalThumbnailComponent> thumbnailOriginal;
+    // std::unique_ptr<ConvertedThumbnailComponent> thumbnailConverted;
     //[/UserVariables]
 
     //==============================================================================
-    std::unique_ptr<Slider> smoothNessSlider;
+    std::unique_ptr<Slider> smoothnessSlider;
     std::unique_ptr<TextButton> convertBtn;
     std::unique_ptr<ToggleButton> dumifyToggle;
     std::unique_ptr<Slider> thresholdSlider;

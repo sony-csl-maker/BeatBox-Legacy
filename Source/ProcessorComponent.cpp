@@ -90,9 +90,10 @@ void ProcessorComponent::resized()
     // This is called when the ProcessorComponent is resized.
     // If you add any child components, this is where you should
     // update their positions.
-    _openButton.setBounds(10, 10, getWidth() - 20, 20);
-    _playButton.setBounds(10, 40, getWidth() - 20, 20);
-    _stopButton.setBounds(10, 70, getWidth() - 20, 20);
+    _openButton.setBounds (10, 10, getWidth() - 20, 20);
+    _playButton.setBounds (10, 40, getWidth() - 20, 20);
+    _stopButton.setBounds (10, 70, getWidth() - 20, 20);
+
     _currentPositionLabel.setBounds(10, 130, getWidth() - 20, 20);
 }
 

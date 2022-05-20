@@ -35,7 +35,7 @@ public:
         addAndMakeVisible (&thumbnailComp);
         addAndMakeVisible (&positionOverlay);
 
-        setSize (600, 400);
+        setSize (520, 880);
 
         formatManager.registerBasicFormats();
         transportSource.addChangeListener (this);
@@ -68,11 +68,11 @@ public:
 
     void resized() override
     {
-        openButton.setBounds (10, 10, 100, 20);
-        playButton.setBounds (10, 40, 100, 20);
-        stopButton.setBounds (10, 70, 100, 20);
+        openButton.setBounds (10, 10, getWidth() - 20, 20);
+        playButton.setBounds (10, 40, getWidth() - 20, 20);
+        stopButton.setBounds (10, 70, getWidth() - 20, 20);
 
-        juce::Rectangle<int> thumbnailBounds (10, 100, getWidth() - 20, getHeight() - 120);
+        juce::Rectangle<int> thumbnailBounds (10, 100, getWidth() - 20, 100);
         thumbnailComp.setBounds (thumbnailBounds);
         positionOverlay.setBounds (thumbnailBounds);
     }
@@ -81,6 +81,11 @@ public:
     {
         if (source == &transportSource)
             transportSourceChanged();
+    }
+
+    juce::File getFileLoaded()
+    {
+        return (file);
     }
 
 private:
@@ -120,7 +125,6 @@ private:
                     break;
 
                 default:
-                    jassertfalse;
                     break;
             }
         }
@@ -144,11 +148,13 @@ private:
 
         chooser->launchAsync (chooserFlags, [this] (const FileChooser& fc)
         {
-            auto file = fc.getResult();
+            file = fc.getResult();
 
             if (file != File{})
             {
                 auto* reader = formatManager.createReaderFor (file);
+
+                std::string filename = file.getFileNameWithoutExtension().toStdString();
 
                 if (reader != nullptr)
                 {
@@ -183,9 +189,12 @@ private:
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
     juce::AudioTransportSource transportSource;
     TransportState state;
+
     juce::AudioThumbnailCache thumbnailCache;
     SimpleThumbnailComponent thumbnailComp;
     SimplePositionOverlay positionOverlay;
+
+    juce::File file;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OriginalThumbnailComponent)
 };

@@ -34,69 +34,34 @@ GuiComponent::GuiComponent ()
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    smoothNessSlider.reset (new Slider ("smoothness"));
-    addAndMakeVisible (smoothNessSlider.get());
-    smoothNessSlider->setRange (0, 10, 0.01);
-    smoothNessSlider->setSliderStyle (Slider::Rotary);
-    smoothNessSlider->setTextBoxStyle (Slider::TextBoxLeft, false, 80, 20);
-    smoothNessSlider->setColour (Slider::backgroundColourId, Colour (0xffe9edee));
-    smoothNessSlider->setColour (Slider::trackColourId, Colours::white);
-    smoothNessSlider->setColour (Slider::rotarySliderFillColourId, Colours::white);
-    smoothNessSlider->setColour (Slider::rotarySliderOutlineColourId, Colours::black);
-    smoothNessSlider->addListener (this);
+    thumbnailOriginal.reset(new OriginalThumbnailComponent());
+    addAndMakeVisible(thumbnailOriginal.get());
 
-    convertBtn.reset (new TextButton ("Convert-button"));
+    convertBtn.reset (new TextButton ("convertBtn"));
     addAndMakeVisible (convertBtn.get());
     convertBtn->setButtonText (TRANS("Convert"));
     convertBtn->addListener (this);
     convertBtn->setColour (TextButton::buttonColourId, Colour (0xff2f31ba));
 
-    convertBtn->setBounds (200, 480, 150, 22);
+    convertBtn->setBounds (10, 320, 500, 20);
 
-    dumifyToggle.reset (new ToggleButton ("dumify-toggle"));
-    addAndMakeVisible (dumifyToggle.get());
-    dumifyToggle->setButtonText (TRANS("dumify++"));
-    dumifyToggle->addListener (this);
-
-    thresholdSlider.reset (new Slider ("threshold"));
+    thresholdSlider.reset (new juce::Slider ("thresholdSlider"));
     addAndMakeVisible (thresholdSlider.get());
     thresholdSlider->setRange (0, 10, 0.01);
-    thresholdSlider->setSliderStyle (Slider::Rotary);
-    thresholdSlider->setTextBoxStyle (Slider::TextBoxRight, false, 80, 20);
-    thresholdSlider->setColour (Slider::backgroundColourId, Colours::white);
-    thresholdSlider->setColour (Slider::trackColourId, Colours::white);
-    thresholdSlider->setColour (Slider::rotarySliderFillColourId, Colours::white);
-    thresholdSlider->setColour (Slider::rotarySliderOutlineColourId, Colours::black);
+    thresholdSlider->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    thresholdSlider->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 80, 20);
     thresholdSlider->addListener (this);
 
-    smoothnessLabel.reset (new Label ("smoothnessl",
-                                      TRANS("Smoothness")));
-    addAndMakeVisible (smoothnessLabel.get());
-    smoothnessLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Bold"));
-    smoothnessLabel->setJustificationType (Justification::centredLeft);
-    smoothnessLabel->setEditable (false, false, false);
-    smoothnessLabel->setColour (TextEditor::textColourId, Colours::black);
-    smoothnessLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+    thresholdSlider->setBounds (50, 350, 190, 100);
 
-    thresholdLabel.reset (new Label ("threshold",
-                                     TRANS("Threshold")));
-    addAndMakeVisible (thresholdLabel.get());
-    thresholdLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Bold"));
-    thresholdLabel->setJustificationType (Justification::centredLeft);
-    thresholdLabel->setEditable (false, false, false);
-    thresholdLabel->setColour (TextEditor::textColourId, Colours::black);
-    thresholdLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+    smoothnessSlider.reset (new juce::Slider ("smoothnessSlider"));
+    addAndMakeVisible (smoothnessSlider.get());
+    smoothnessSlider->setRange (0, 10, 0.01);
+    smoothnessSlider->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    smoothnessSlider->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 80, 20);
+    smoothnessSlider->addListener (this);
 
-    snareLabel.reset (new Label ("snare",
-                                 TRANS("Snare")));
-    addAndMakeVisible (snareLabel.get());
-    snareLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Bold"));
-    snareLabel->setJustificationType (Justification::centred);
-    snareLabel->setEditable (false, false, false);
-    snareLabel->setColour (TextEditor::textColourId, Colours::black);
-    snareLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
-
-    snareLabel->setBounds (-104, -40, 88, 24);
+    smoothnessSlider->setBounds (240, 350, 190, 100);
 
     downloadBtn.reset (new TextButton ("downloadBtn"));
     addAndMakeVisible (downloadBtn.get());
@@ -104,13 +69,7 @@ GuiComponent::GuiComponent ()
     downloadBtn->addListener (this);
     downloadBtn->setColour (TextButton::buttonColourId, Colours::blue);
 
-    downloadBtn->setBounds (200, 728, 150, 22);
-
-    _originalThumbnail.reset (new OriginalThumbnailComponent() );
-    addAndMakeVisible(_originalThumbnail.get());
-
-    _convertedThumbnail.reset (new ConvertedThumbnailComponent() );
-    addAndMakeVisible(_convertedThumbnail.get());
+    downloadBtn->setBounds (10, 800, 500, 20);
 
     //[UserPreSize]
     //[/UserPreSize]
@@ -125,20 +84,12 @@ GuiComponent::~GuiComponent()
     //[Destructor_pre]. You can add your own custom destruction code here..
     //[/Destructor_pre]
 
-    smoothNessSlider = nullptr;
     convertBtn = nullptr;
-    dumifyToggle = nullptr;
-    thresholdSlider = nullptr;
-    smoothnessLabel = nullptr;
-    thresholdLabel = nullptr;
-    snareLabel = nullptr;
-    FileBtn = nullptr;
-    playOrigBtn = nullptr;
-    pauseOrigBtn = nullptr;
-    playConvertBtn = nullptr;
-    pauseConvertBtn = nullptr;
-    downloadBtn = nullptr;
 
+    smoothnessSlider = nullptr;
+    thresholdSlider = nullptr;
+
+    downloadBtn = nullptr;
 
     //[Destructor]. You can add your own custom destruction code here..
     //[/Destructor]
@@ -153,25 +104,7 @@ void GuiComponent::paint (Graphics& g)
     g.fillAll (Colour (0xff333236));
 
     {
-        int x = 76, y = 148, width = 392, height = 92;
-        Colour fillColour = Colour (0xff2a78a5);
-        //[UserPaintCustomArguments] Customize the painting arguments here..
-        //[/UserPaintCustomArguments]
-        g.setColour (fillColour);
-        g.fillRect (x, y, width, height);
-    }
-
-    {
-        int x = 76, y = 588, width = 392, height = 92;
-        Colour fillColour = Colour (0xff2a78a5);
-        //[UserPaintCustomArguments] Customize the painting arguments here..
-        //[/UserPaintCustomArguments]
-        g.setColour (fillColour);
-        g.fillRect (x, y, width, height);
-    }
-
-    {
-        int x = 76, y = 308, width = 392, height = 92;
+        int x = 10, y = 210, width = 500, height = 100;
         Colour fillColour = Colour (0xff2a78a5);
         //[UserPaintCustomArguments] Customize the painting arguments here..
         //[/UserPaintCustomArguments]
@@ -188,11 +121,6 @@ void GuiComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    smoothNessSlider->setBounds (proportionOfWidth (0.5710f), proportionOfHeight (0.2550f), 176, 96);
-    dumifyToggle->setBounds (proportionOfWidth (0.6792f), proportionOfHeight (0.4061f), 96, 24);
-    thresholdSlider->setBounds (proportionOfWidth (0.5710f) + roundToInt (176 * 1.1818f), proportionOfHeight (0.2550f) + roundToInt (96 * 0.0000f), 176, 96);
-    smoothnessLabel->setBounds (proportionOfWidth (0.5710f) + 80, proportionOfHeight (0.2550f) + -40, 88, 24);
-    thresholdLabel->setBounds ((proportionOfWidth (0.5710f) + roundToInt (176 * 1.1818f)) + 8, (proportionOfHeight (0.2550f) + roundToInt (96 * 0.0000f)) + -40, 88, 24);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -202,15 +130,24 @@ void GuiComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     //[UsersliderValueChanged_Pre]
     //[/UsersliderValueChanged_Pre]
 
-    if (sliderThatWasMoved == smoothNessSlider.get())
+    if (sliderThatWasMoved == thresholdSlider.get())
     {
-        //[UserSliderCode_smoothNessSlider] -- add your slider handling code here..
-        //[/UserSliderCode_smoothNessSlider]
+        //[UserButtonCode_thresholdSlider] -- add your slider handler code here..
+
+        std::cout << "thresholdSlider moved" << std::endl;
+        std::cout << "value = " << std::to_string(thresholdSlider->getValue()) << std::endl;
+
+        //[/UserButtonCode_thresholdSlider]
     }
-    else if (sliderThatWasMoved == thresholdSlider.get())
+
+    if (sliderThatWasMoved == smoothnessSlider.get())
     {
-        //[UserSliderCode_thresholdSlider] -- add your slider handling code here..
-        //[/UserSliderCode_thresholdSlider]
+        //[UserButtonCode_smoothnessSlider] -- add your slider handler code here..
+
+        std::cout << "smoothnessSlider moved" << std::endl;
+        std::cout << "value = " << std::to_string(smoothnessSlider->getValue()) << std::endl;
+
+        //[/UserButtonCode_smoothnessSlider]
     }
 
     //[UsersliderValueChanged_Post]
@@ -225,48 +162,20 @@ void GuiComponent::buttonClicked (Button* buttonThatWasClicked)
     if (buttonThatWasClicked == convertBtn.get())
     {
         //[UserButtonCode_convertBtn] -- add your button handler code here..
-        _processor->loadTrackToConvert();
-        _processor->processTrackToConvert();
-        _processor->convertAndTrasnferTrack();
+
+        std::cout << "convertBtn pressed" << std::endl;
+
+        // _convertedThumbnail->loadConvertedFile();
+
         //[/UserButtonCode_convertBtn]
     }
-    else if (buttonThatWasClicked == dumifyToggle.get())
-    {
-        //[UserButtonCode_dumifyToggle] -- add your button handler code here..
-        //[/UserButtonCode_dumifyToggle]
-    }
-    else if (buttonThatWasClicked == FileBtn.get())
-    {
-        //[UserButtonCode_FileBtn] -- add your button handler code here..
-        _processor->openButtonClicked();
-        //[/UserButtonCode_FileBtn]
-    }
-    else if (buttonThatWasClicked == playOrigBtn.get())
-    {
-        //[UserButtonCode_playOrigBtn] -- add your button handler code here..
-        _processor->playButtonClicked();
-        //[/UserButtonCode_playOrigBtn]
-    }
-    else if (buttonThatWasClicked == pauseOrigBtn.get())
-    {
-        //[UserButtonCode_pauseOrigBtn] -- add your button handler code here..
-        _processor->stopButtonClicked();
-        //[/UserButtonCode_pauseOrigBtn]
-    }
-    else if (buttonThatWasClicked == playConvertBtn.get())
-    {
-        //[UserButtonCode_playConvertBtn] -- add your button handler code here..
-        //[/UserButtonCode_playConvertBtn]
-    }
-    else if (buttonThatWasClicked == pauseConvertBtn.get())
-    {
-        //[UserButtonCode_pauseConvertBtn] -- add your button handler code here..
-        //[/UserButtonCode_pauseConvertBtn]
-    }
-    else if (buttonThatWasClicked == downloadBtn.get())
+
+    if (buttonThatWasClicked == downloadBtn.get())
     {
         //[UserButtonCode_downloadBtn] -- add your button handler code here..
-        _processor->saveTransferredFile();
+
+        std::cout << "downloadBtn pressed" << std::endl;
+
         //[/UserButtonCode_downloadBtn]
     }
 
@@ -298,7 +207,7 @@ BEGIN_JUCER_METADATA
     <RECT pos="76 588 392 92" fill="solid: ff2a78a5" hasStroke="0"/>
     <RECT pos="76 308 392 92" fill="solid: ff2a78a5" hasStroke="0"/>
   </BACKGROUND>
-  <SLIDER name="smoothness" id="8ffb4b136762fc90" memberName="smoothNessSlider"
+  <SLIDER name="smoothness" id="8ffb4b136762fc90" memberName="smoothnessSlider"
           virtualName="" explicitFocusOrder="0" pos="57.1% 25.502% 176 96"
           bkgcol="ffe9edee" trackcol="ffffffff" rotarysliderfill="ffffffff"
           rotaryslideroutline="ff000000" min="0.0" max="10.0" int="0.01"
