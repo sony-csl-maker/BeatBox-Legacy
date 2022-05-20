@@ -37,13 +37,13 @@ GuiComponent::GuiComponent ()
     thumbnailOriginal.reset(new OriginalThumbnailComponent());
     addAndMakeVisible(thumbnailOriginal.get());
 
-    convertBtn.reset (new TextButton ("convertBtn"));
-    addAndMakeVisible (convertBtn.get());
-    convertBtn->setButtonText (TRANS("Convert"));
-    convertBtn->addListener (this);
-    convertBtn->setColour (TextButton::buttonColourId, Colour (0xff2f31ba));
+    thresholdIndex.reset(new SimpleThresholdIndex());
+    addAndMakeVisible(thresholdIndex.get());
+    thresholdIndex->setBounds(10, 100, 500, 100);
 
-    convertBtn->setBounds (10, 320, 500, 20);
+    peaksModelization.reset(new SimplePeakModelization());
+    addAndMakeVisible(peaksModelization.get());
+    peaksModelization->setBounds(10, 210, 500, 100);
 
     thresholdSlider.reset (new juce::Slider ("thresholdSlider"));
     addAndMakeVisible (thresholdSlider.get());
@@ -52,7 +52,8 @@ GuiComponent::GuiComponent ()
     thresholdSlider->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 80, 20);
     thresholdSlider->addListener (this);
 
-    thresholdSlider->setBounds (50, 350, 190, 100);
+    thresholdSlider->setBounds (70, 330, 190, 100);
+    thresholdSlider->setValue(9.5);
 
     smoothnessSlider.reset (new juce::Slider ("smoothnessSlider"));
     addAndMakeVisible (smoothnessSlider.get());
@@ -61,13 +62,30 @@ GuiComponent::GuiComponent ()
     smoothnessSlider->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 80, 20);
     smoothnessSlider->addListener (this);
 
-    smoothnessSlider->setBounds (240, 350, 190, 100);
+    smoothnessSlider->setBounds (250, 330, 190, 100);
+    smoothnessSlider->setValue(0.17);
 
-    downloadBtn.reset (new TextButton ("downloadBtn"));
+    simulateBtn.reset (new juce::TextButton ("simulateBtn"));
+    addAndMakeVisible (simulateBtn.get());
+    simulateBtn->setButtonText (TRANS("Simulate"));
+    simulateBtn->addListener (this);
+    simulateBtn->setColour (juce::TextButton::buttonColourId, juce::Colour (0xff2f31ba));
+
+    simulateBtn->setBounds (10, 470, 500, 20);
+
+    convertBtn.reset (new juce::TextButton ("convertBtn"));
+    addAndMakeVisible (convertBtn.get());
+    convertBtn->setButtonText (TRANS("Convert"));
+    convertBtn->addListener (this);
+    convertBtn->setColour (juce::TextButton::buttonColourId, juce::Colour (0xff2f31ba));
+
+    convertBtn->setBounds (10, 510, 500, 20);
+
+    downloadBtn.reset (new juce::TextButton ("downloadBtn"));
     addAndMakeVisible (downloadBtn.get());
     downloadBtn->setButtonText (TRANS("Download"));
     downloadBtn->addListener (this);
-    downloadBtn->setColour (TextButton::buttonColourId, Colours::blue);
+    downloadBtn->setColour (juce::TextButton::buttonColourId, juce::Colours::blue);
 
     downloadBtn->setBounds (10, 800, 500, 20);
 
@@ -84,6 +102,7 @@ GuiComponent::~GuiComponent()
     //[Destructor_pre]. You can add your own custom destruction code here..
     //[/Destructor_pre]
 
+    simulateBtn = nullptr;
     convertBtn = nullptr;
 
     smoothnessSlider = nullptr;
@@ -134,8 +153,7 @@ void GuiComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     {
         //[UserButtonCode_thresholdSlider] -- add your slider handler code here..
 
-        std::cout << "thresholdSlider moved" << std::endl;
-        std::cout << "value = " << std::to_string(thresholdSlider->getValue()) << std::endl;
+        thresholdIndex->sendThresholdValue(thresholdSlider->getValue());
 
         //[/UserButtonCode_thresholdSlider]
     }
@@ -159,13 +177,25 @@ void GuiComponent::buttonClicked (Button* buttonThatWasClicked)
     //[UserbuttonClicked_Pre]
     //[/UserbuttonClicked_Pre]
 
+    if (buttonThatWasClicked == simulateBtn.get())
+    {
+        //[UserButtonCode_simulateBtn] -- add your button handler code here..
+
+        std::cout << "simulateBtn pressed" << std::endl;
+
+        _processor->loadTrackToConvert();
+        // _processor->processTrackToConvert();
+
+        //[/UserButtonCode_simulateBtn]
+    }
+
     if (buttonThatWasClicked == convertBtn.get())
     {
         //[UserButtonCode_convertBtn] -- add your button handler code here..
 
         std::cout << "convertBtn pressed" << std::endl;
 
-        // _convertedThumbnail->loadConvertedFile();
+        _processor->convertAndTrasnferTrack();
 
         //[/UserButtonCode_convertBtn]
     }
@@ -175,6 +205,8 @@ void GuiComponent::buttonClicked (Button* buttonThatWasClicked)
         //[UserButtonCode_downloadBtn] -- add your button handler code here..
 
         std::cout << "downloadBtn pressed" << std::endl;
+
+        _processor->saveTransferredFile();
 
         //[/UserButtonCode_downloadBtn]
     }

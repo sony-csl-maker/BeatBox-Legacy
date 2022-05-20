@@ -124,6 +124,13 @@ public:
         _beatBox->fillAudioTimeSeries(_buffer);
     }
 
+    void sendSmoothnessValue(int smoothness)
+    {
+        _beatBox->onsetDetection(_reader, _buffer);
+
+        _beatBox->findPeaksWithSmoothness(smoothness);
+    }
+
     void processTrackToConvert()
     {
         _beatBox->onsetDetection(_reader, _buffer);
@@ -153,6 +160,13 @@ public:
         return (_loadedFile);
     }
 
+    std::vector<float> sendPeaks()
+    {
+        processTrackToConvert();
+
+        return (_beatBox->getPeaks());
+    }
+
     void playButtonClicked()
     {
         changeState(Starting);
@@ -161,6 +175,13 @@ public:
     void stopButtonClicked()
     {
         changeState(Stopping);
+    }
+
+    std::size_t sendAudioTimeSeriesLength()
+    {
+        loadTrackToConvert();
+
+        return (_beatBox->getAudioTrack().size());
     }
 
 private:

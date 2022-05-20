@@ -16,7 +16,8 @@ public:
     BeatBoxComponent(void);
     ~BeatBoxComponent(void);
 
-    void findPeaks();
+    void findPeaks(void);
+    void findPeaksWithSmoothness(int smoothness);
 
     Array<float> encodeSample(Array<float> audioBuffer, const int audioLength);
     Array<float> decodeSample(Array<float> z_c_array_ptr);
@@ -39,14 +40,13 @@ public:
     void setFilename(std::string filename);
 
     // getters/setters
+    std::vector<float> getAudioTrack() { return _audioTimeSeries; };
     std::vector<float> getEncodedAudioTimeSeries() { return _encodedAudioTimeSeries; };
     std::vector<float> getOnsets() { return _onsets; };
     std::vector<float> getPeaks() { return _peaks; };
 
     Array<float> getZ() { return _newZ; };
     Array<float> getC() { return _normalizedClasses; };
-
-    std::vector<float> getTransferredTrack() { return _encodedAudioTimeSeries; };
 
 protected:
 private:

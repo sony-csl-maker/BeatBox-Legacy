@@ -198,6 +198,25 @@ void BeatBoxComponent::findPeaks()
         _peaks[index] *= 441;
 }
 
+void BeatBoxComponent::findPeaksWithSmoothness(int smoothness)
+{
+    float last_peak = -1e10;
+    _smoothness = smoothness;
+
+    for (long unsigned int index = 0; index < _onsets.size() - 1; index++)
+    {
+        if ((std::distance(_onsets.begin() - _smoothness, std::max_element(_onsets.begin() - _smoothness, _onsets.end()) + _smoothness) > (long int)index && (index - last_peak > 0)))
+        {
+            _peaks.push_back(index);
+            _peaksValues.push_back(_onsets[index]);
+            last_peak = index;
+        }
+    }
+
+    for (unsigned int index = 0; index < _peaks.size() - 1; index += 1)
+        _peaks[index] *= 441;
+}
+
 void BeatBoxComponent::findStartEndOnset()
 {
     long unsigned int length = 24575;
