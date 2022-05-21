@@ -1,14 +1,18 @@
 /*
-** EPITECH PROJECT, 2022
-** JUCE
-** File description:
-** BeatBoxComponent
+  ==============================================================================
+    This file contains the basic startup code for a JUCE application.
+  ==============================================================================
 */
 
-#ifndef BEATBOXCOMPONENT_HPP_
-#define BEATBOXCOMPONENT_HPP_
+#pragma once
 
-#include "ProcessorComponent.h"
+#include <JuceHeader.h>
+
+#include <utility>
+
+#include "Gist.h"
+
+#include <torch/script.h>
 
 class BeatBoxComponent
 {
@@ -29,14 +33,15 @@ public:
 
     void findStartEndOnset(void);
 
+    // saving
     void saveOriginFile(void);
     void saveTransferredFile(void);
     void saveSamplesFile(long unsigned int sampleIndex);
 
     // tools
+    void setTorchModules(void);
     void fillAudioTimeSeries(juce::AudioSampleBuffer buffer);
     void onsetDetection(juce::AudioFormatReader *reader, juce::AudioSampleBuffer buffer);
-    void setTorchModules(void);
     void setFilename(std::string filename);
 
     // getters/setters
@@ -70,8 +75,8 @@ private:
     torch::jit::script::Module _encoder;
     torch::jit::script::Module _decoder;
 
-    Array<float> _newZ;
-    Array<float> _normalizedClasses;
+    juce::Array<float> _newZ;
+    juce::Array<float> _normalizedClasses;
 
     int _numberOfClasses = 128;
     int _numberOfDimensions = 3;
@@ -80,5 +85,3 @@ private:
 
     int _drumify = 0;
 };
-
-#endif /* !BEATBOXCOMPONENT_HPP_ */

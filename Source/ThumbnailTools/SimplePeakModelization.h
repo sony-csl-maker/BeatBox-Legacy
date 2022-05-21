@@ -1,12 +1,16 @@
+/*
+  ==============================================================================
+    This file contains the code for peak modelization based on the data
+    provided by torch and gist.
+  ==============================================================================
+*/
+
 #pragma once
 
 // Juce
 #include <JuceHeader.h>
 
-#include "../../ProcessorComponent.h"
-
 //------------------------------------------------------------------------------
-// DO NOT USE YET
 class SimplePeakModelization : public juce::Component,
                               private juce::Timer
 {
@@ -23,23 +27,11 @@ public:
         std::cout << "size: " << length << std::endl;
     }
 
-    void sendPeaksValue()
-    {
-        peaks = _processor->sendPeaks();
-    }
-
-    void sendTrackLength()
-    {
-        length = _processor->sendAudioTimeSeriesLength();
-    }
-
 private:
     void timerCallback() override
     {
         repaint();
     }
-
-    std::unique_ptr<ProcessorComponent> _processor = std::make_unique<ProcessorComponent>();
 
     std::vector<float> peaks;
     std::size_t length;

@@ -1,9 +1,14 @@
+/*
+  ==============================================================================
+    This file contains the code for visualization of a threshold applied on a
+    track using data provided by the processor.
+  ==============================================================================
+*/
+
 #pragma once
 
 // Juce
 #include <JuceHeader.h>
-
-#include "../../GuiComponent.h"
 
 //------------------------------------------------------------------------------
 class SimpleThresholdIndex : public juce::Component,

@@ -1,11 +1,8 @@
 /*
-** EPITECH PROJECT, 2022
-** JUCE
-** File description:
-** BeatBoxComponent
+  ==============================================================================
+    This file contains the basic startup code for a JUCE application.
+  ==============================================================================
 */
-
-#include "ProcessorComponent.h"
 
 #include "BeatBoxComponent.h"
 
@@ -21,7 +18,7 @@ void BeatBoxComponent::saveOriginFile()
 {
     juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-orig" + ".wav");
 
-    Array<float> array;
+    juce::Array<float> array;
 
     for (auto it : _audioTimeSeries)
         array.add(it);
@@ -49,7 +46,7 @@ void BeatBoxComponent::saveOriginFile()
 void BeatBoxComponent::saveTransferredFile()
 {
     juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-transferred" + ".wav");
-    Array<float> array;
+    juce::Array<float> array;
 
     fillEncodedSamples();
 
@@ -79,7 +76,7 @@ void BeatBoxComponent::saveTransferredFile()
 void BeatBoxComponent::saveSamplesFile(long unsigned int sampleIndex)
 {
     juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + _filename + "-sample" + std::to_string(sampleIndex) + ".wav");
-    Array<float> array(transferSample(_samplesTab.at(sampleIndex)));
+    juce::Array<float> array(transferSample(_samplesTab.at(sampleIndex)));
     AudioBuffer<float> buffer(2, 24575);
 
     for (int index = 0; index < array.size(); index += 1)
@@ -102,7 +99,7 @@ void BeatBoxComponent::saveSamplesFile(long unsigned int sampleIndex)
 
 void BeatBoxComponent::fillEncodedSamples()
 {
-    std::vector<Array<float>> encodedSamplesTab;
+    std::vector<juce::Array<float>> encodedSamplesTab;
 
     for (size_t sampleIndex = 0; sampleIndex < _samplesTab.size(); sampleIndex += 1)
         encodedSamplesTab.push_back(transferSample(_samplesTab[sampleIndex]));
@@ -119,19 +116,19 @@ void BeatBoxComponent::fillEncodedSamples()
     }
 }
 
-Array<float> BeatBoxComponent::transferSample(std::vector<float> sample)
+juce::Array<float> BeatBoxComponent::transferSample(std::vector<float> sample)
 {
-    Array<float> transform;
+    juce::Array<float> transform;
 
     for (auto it : sample)
         transform.add(it);
 
-    Array<float> encodedSample = encodeSample(transform, 24575);
+    juce::Array<float> encodedSample = encodeSample(transform, 24575);
 
     return (decodeSample(encodedSample));
 }
 
-Array<float> BeatBoxComponent::encodeSample(Array<float> audioBuffer, const int audioLength)
+juce::Array<float> BeatBoxComponent::encodeSample(juce::Array<float> audioBuffer, const int audioLength)
 {
     torch::Tensor tensor_wav = torch::from_blob(audioBuffer.data(), {1, audioLength});
 
@@ -142,7 +139,7 @@ Array<float> BeatBoxComponent::encodeSample(Array<float> audioBuffer, const int 
     torch::Tensor encoderOutput = _encoder.forward(inputs).toTensor();
 
     float *valuePtr = encoderOutput.data_ptr<float>();
-    Array<float> arrayValues(valuePtr, _numberOfDimensions + _numberOfClasses);
+    juce::Array<float> arrayValues(valuePtr, _numberOfDimensions + _numberOfClasses);
 
     _newZ.resize(_numberOfDimensions);
 
@@ -160,7 +157,7 @@ Array<float> BeatBoxComponent::encodeSample(Array<float> audioBuffer, const int 
     return (arrayValues);
 }
 
-Array<float> BeatBoxComponent::decodeSample(Array<float> z_c_array_ptr)
+juce::Array<float> BeatBoxComponent::decodeSample(juce::Array<float> z_c_array_ptr)
 {
     torch::Tensor tensor_z_c = torch::from_blob(z_c_array_ptr.data(), {1, _numberOfDimensions + _numberOfClasses}).clone();
 
@@ -172,7 +169,7 @@ Array<float> BeatBoxComponent::decodeSample(Array<float> z_c_array_ptr)
 
     float *value = decoderOutput.data_ptr<float>();
     int sizeWav = 24575;
-    Array<float> arrayWav(value, sizeWav);
+    juce::Array<float> arrayWav(value, sizeWav);
 
     std::cout << "Decodede Sample number " << std::to_string(_index) << ": " << arrayWav.size() << std::endl;
     _index += 1;

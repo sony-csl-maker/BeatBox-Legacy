@@ -3,211 +3,202 @@
 // Juce
 #include <JuceHeader.h>
 
-// std
-#include <utility>
-
-// gist
-#include "Gist.h"
-
-// libtorch
-#include <torch/script.h>
-
-// BeatBoxComponent
+// Component
 #include "BeatBoxComponent.h"
 
-//==============================================================================
-/*
-    This component lives inside our window, and this is where you should put all
-    your controls and content.
-*/
+#include "ThumbnailTools/SimplePositionOverlay.h"
+#include "ThumbnailTools/SimpleThumbnailComponent.h"
 
 //==============================================================================
-class ProcessorComponent : public juce::AudioAppComponent, public juce::ChangeListener, public juce::Timer
+class ProcessorComponent   : public juce::AudioAppComponent,
+                             public juce::ChangeListener
 {
 public:
-    ProcessorComponent();
+    ProcessorComponent()
+      : state (Stopped),
+        thumbnailCache (5),
+        thumbnailComp (512, formatManager, thumbnailCache),
+        positionOverlay (transportSource)
+    {
+        addAndMakeVisible (&openButton);
+        openButton.setButtonText ("Open...");
+        openButton.onClick = [this] { openButtonClicked(); };
 
-    ~ProcessorComponent() override;
+        addAndMakeVisible (&playButton);
+        playButton.setButtonText ("Play");
+        playButton.onClick = [this] { playButtonClicked(); };
+        playButton.setColour (juce::TextButton::buttonColourId, juce::Colours::green);
+        playButton.setEnabled (false);
 
-    void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
+        addAndMakeVisible (&stopButton);
+        stopButton.setButtonText ("Stop");
+        stopButton.onClick = [this] { stopButtonClicked(); };
+        stopButton.setColour (juce::TextButton::buttonColourId, juce::Colours::red);
+        stopButton.setEnabled (false);
 
-    void getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill) override;
-    void releaseResources() override;
+        addAndMakeVisible (&thumbnailComp);
+        addAndMakeVisible (&positionOverlay);
 
-    void paint(juce::Graphics &g) override;
+        setSize (520, 880);
 
-    void resized() override;
+        formatManager.registerBasicFormats();
+        transportSource.addChangeListener (this);
 
-    void changeListenerCallback(juce::ChangeBroadcaster *source) override;
-    void timerCallback() override;
+        setAudioChannels (2, 2);
+    }
 
+    ~ProcessorComponent() override
+    {
+        shutdownAudio();
+    }
+
+    void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override
+    {
+        transportSource.prepareToPlay (samplesPerBlockExpected, sampleRate);
+    }
+
+    void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override
+    {
+        if (readerSource.get() == nullptr)
+            bufferToFill.clearActiveBufferRegion();
+        else
+            transportSource.getNextAudioBlock (bufferToFill);
+    }
+
+    void releaseResources() override
+    {
+        transportSource.releaseResources();
+    }
+
+    void resized() override
+    {
+        openButton.setBounds (10, 10, getWidth() - 20, 20);
+        playButton.setBounds (10, 40, getWidth() - 20, 20);
+        stopButton.setBounds (10, 70, getWidth() - 20, 20);
+
+        juce::Rectangle<int> thumbnailBounds (10, 100, getWidth() - 20, 100);
+        thumbnailComp.setBounds (thumbnailBounds);
+        positionOverlay.setBounds (thumbnailBounds);
+    }
+
+    void changeListenerCallback (juce::ChangeBroadcaster* source) override
+    {
+        if (source == &transportSource)
+            transportSourceChanged();
+    }
+
+    juce::File getFileLoaded()
+    {
+        return (file);
+    }
+
+private:
     enum TransportState
     {
         Stopped,
         Starting,
         Playing,
-        Stopping,
+        Stopping
     };
 
-    void changeState(TransportState newState)
+    void changeState (TransportState newState)
     {
-        if (_state != newState)
+        if (state != newState)
         {
-            _state = newState;
+            state = newState;
 
-            switch (_state)
+            switch (state)
             {
-            case Stopped:
-                _stopButton.setEnabled(false);
-                _playButton.setEnabled(true);
-                _transportSource.setPosition(0.0);
-                break;
+                case Stopped:
+                    stopButton.setEnabled (false);
+                    playButton.setEnabled (true);
+                    transportSource.setPosition (0.0);
+                    break;
 
-            case Starting:
-                _playButton.setEnabled(false);
-                _transportSource.start();
-                break;
+                case Starting:
+                    playButton.setEnabled (false);
+                    transportSource.start();
+                    break;
 
-            case Playing:
-                _stopButton.setEnabled(true);
-                break;
+                case Playing:
+                    stopButton.setEnabled (true);
+                    break;
 
-            case Stopping:
-                _transportSource.stop();
-                break;
+                case Stopping:
+                    transportSource.stop();
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
             }
         }
     }
 
+    void transportSourceChanged()
+    {
+        if (transportSource.isPlaying())
+            changeState (Playing);
+        else
+            changeState (Stopped);
+    }
+
     void openButtonClicked()
     {
-        _fileChooser = std::make_unique<juce::FileChooser>("Select a Wave file to play...",
-                                                           juce::File{},
-                                                           "*.wav");
-        auto chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles;
+        chooser = std::make_unique<juce::FileChooser> ("Select a Wave file to play...",
+                                                       juce::File{},
+                                                       "*.wav");
+        auto chooserFlags = juce::FileBrowserComponent::openMode
+                          | juce::FileBrowserComponent::canSelectFiles;
 
-        _fileChooser->launchAsync(chooserFlags, [this](const juce::FileChooser &fc)
-                                  {
-            _loadedFile = fc.getResult();
+        chooser->launchAsync (chooserFlags, [this] (const FileChooser& fc)
+        {
+            file = fc.getResult();
 
-            if (_loadedFile != juce::File{})
+            if (file != File{})
             {
-                _reader = _formatManager.createReaderFor (_loadedFile);
-                std::string filename = _loadedFile.getFileNameWithoutExtension().toStdString();
+                auto* reader = formatManager.createReaderFor (file);
 
-                _beatBox->setFilename(filename);
+                std::string filename = file.getFileNameWithoutExtension().toStdString();
 
-                juce::AudioSampleBuffer buffer(1, _reader->lengthInSamples);
-                _buffer = buffer;
-
-                if (_reader != nullptr)
+                if (reader != nullptr)
                 {
-                    auto newSource = std::make_unique<juce::AudioFormatReaderSource> (_reader, true);
-                    _transportSource.setSource (newSource.get(), 0, nullptr, _reader->sampleRate);
-                    _playButton.setEnabled (true);
-                    _readerSource.reset (newSource.release());
-
-                    _buffer.setSize ((int) _reader->numChannels, (int) _reader->lengthInSamples);
-                    _reader->read (&_buffer, 0, (int) _reader->lengthInSamples, 0, true, true);
+                    auto newSource = std::make_unique<juce::AudioFormatReaderSource> (reader, true);
+                    transportSource.setSource (newSource.get(), 0, nullptr, reader->sampleRate);
+                    playButton.setEnabled (true);
+                    thumbnailComp.setFile (file);
+                    readerSource.reset (newSource.release());
                 }
-            } });
-        return;
-    }
-
-    void loadTrackToConvert()
-    {
-        _beatBox->setTorchModules();
-
-        _beatBox->fillAudioTimeSeries(_buffer);
-    }
-
-    void sendSmoothnessValue(int smoothness)
-    {
-        _beatBox->onsetDetection(_reader, _buffer);
-
-        _beatBox->findPeaksWithSmoothness(smoothness);
-    }
-
-    void processTrackToConvert()
-    {
-        _beatBox->onsetDetection(_reader, _buffer);
-
-        _beatBox->findPeaks();
-    }
-
-    void convertAndTrasnferTrack()
-    {
-        _beatBox->findStartEndOnset();
-
-        _beatBox->transferTrack();
-    }
-
-    void saveTransferredFile()
-    {
-        _beatBox->saveTransferredFile();
-    }
-
-    void playConvertedTrack()
-    {
-        // do something here please
-    }
-
-    juce::File sendFileLoaded()
-    {
-        return (_loadedFile);
-    }
-
-    std::vector<float> sendPeaks()
-    {
-        processTrackToConvert();
-
-        return (_beatBox->getPeaks());
+            }
+        });
     }
 
     void playButtonClicked()
     {
-        changeState(Starting);
+        changeState (Starting);
     }
 
     void stopButtonClicked()
     {
-        changeState(Stopping);
+        changeState (Stopping);
     }
 
-    std::size_t sendAudioTimeSeriesLength()
-    {
-        loadTrackToConvert();
-
-        return (_beatBox->getAudioTrack().size());
-    }
-
-private:
     //==========================================================================
-    juce::TextButton _openButton;
-    juce::TextButton _playButton;
-    juce::TextButton _stopButton;
-    juce::Label _currentPositionLabel;
+    juce::TextButton openButton;
+    juce::TextButton playButton;
+    juce::TextButton stopButton;
 
-    std::unique_ptr<juce::FileChooser> _fileChooser;
+    std::unique_ptr<juce::FileChooser> chooser;
 
-    // Original File
-    juce::AudioFormatManager _formatManager;
-    std::unique_ptr<juce::AudioFormatReaderSource> _readerSource;
-    juce::AudioTransportSource _transportSource;
-    TransportState _state;
+    juce::AudioFormatManager formatManager;
+    std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
+    juce::AudioTransportSource transportSource;
+    TransportState state;
 
-    juce::File _loadedFile;
+    juce::AudioThumbnailCache thumbnailCache;
+    SimpleThumbnailComponent thumbnailComp;
+    SimplePositionOverlay positionOverlay;
 
-    juce::AudioFormatReader *_reader;
-    juce::AudioSampleBuffer _buffer;
+    juce::File file;
 
-    juce::AudioFormatReader *_readerTransformed;
-    juce::AudioSampleBuffer _bufferTransformed;
-
-    std::unique_ptr<BeatBoxComponent> _beatBox = std::make_unique<BeatBoxComponent>();
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ProcessorComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProcessorComponent)
 };
