@@ -62,7 +62,8 @@ public:
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
-    std::unique_ptr<ProcessorComponent> _processor = std::make_unique<ProcessorComponent>();
+    // GET Informations from processor
+    std::unique_ptr<ProcessorComponent> processor = std::make_unique<ProcessorComponent>();
 
     std::unique_ptr<OriginalThumbnailComponent> thumbnailOriginal;
 
@@ -93,4 +94,3 @@ private:
 
 //[EndFile] You can add extra defines here...
 //[/EndFile]
-

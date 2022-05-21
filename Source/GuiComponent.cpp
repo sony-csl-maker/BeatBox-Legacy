@@ -122,15 +122,6 @@ void GuiComponent::paint (Graphics& g)
 
     g.fillAll (Colour (0xff333236));
 
-    {
-        int x = 10, y = 210, width = 500, height = 100;
-        Colour fillColour = Colour (0xff2a78a5);
-        //[UserPaintCustomArguments] Customize the painting arguments here..
-        //[/UserPaintCustomArguments]
-        g.setColour (fillColour);
-        g.fillRect (x, y, width, height);
-    }
-
     //[UserPaint] Add your own custom painting code here..
     //[/UserPaint]
 }
@@ -153,6 +144,7 @@ void GuiComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     {
         //[UserButtonCode_thresholdSlider] -- add your slider handler code here..
 
+        // processor->updateThreshold();
         thresholdIndex->sendThresholdValue(thresholdSlider->getValue());
 
         //[/UserButtonCode_thresholdSlider]
@@ -162,8 +154,7 @@ void GuiComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     {
         //[UserButtonCode_smoothnessSlider] -- add your slider handler code here..
 
-        std::cout << "smoothnessSlider moved" << std::endl;
-        std::cout << "value = " << std::to_string(smoothnessSlider->getValue()) << std::endl;
+        // peaksModelization->sendSmoothnessValue(smoothnessSlider->getValue());
 
         //[/UserButtonCode_smoothnessSlider]
     }
@@ -183,9 +174,6 @@ void GuiComponent::buttonClicked (Button* buttonThatWasClicked)
 
         std::cout << "simulateBtn pressed" << std::endl;
 
-        _processor->loadTrackToConvert();
-        // _processor->processTrackToConvert();
-
         //[/UserButtonCode_simulateBtn]
     }
 
@@ -195,8 +183,6 @@ void GuiComponent::buttonClicked (Button* buttonThatWasClicked)
 
         std::cout << "convertBtn pressed" << std::endl;
 
-        _processor->convertAndTrasnferTrack();
-
         //[/UserButtonCode_convertBtn]
     }
 
@@ -205,8 +191,6 @@ void GuiComponent::buttonClicked (Button* buttonThatWasClicked)
         //[UserButtonCode_downloadBtn] -- add your button handler code here..
 
         std::cout << "downloadBtn pressed" << std::endl;
-
-        _processor->saveTransferredFile();
 
         //[/UserButtonCode_downloadBtn]
     }

@@ -19,18 +19,6 @@ public:
     void paint (juce::Graphics& g) override
     {
         g.setColour (juce::Colours::black);
-
-        std::cout << "size: " << length << std::endl;
-    }
-
-    void sendPeaksValue()
-    {
-        peaks = _processor->sendPeaks();
-    }
-
-    void sendTrackLength()
-    {
-        length = _processor->sendAudioTimeSeriesLength();
     }
 
 private:
