@@ -175,6 +175,8 @@ void ProcessorComponent::processAudioTrack()
 {
     std::vector<Array<float>> tempSampleTab;
 
+    // the problem lies on samplesTab being empty :/ check from previous code if it's the case
+
     for (size_t sampleIndex = 0; sampleIndex < samplesTab.size(); sampleIndex += 1)
         tempSampleTab.push_back(processSamples(samplesTab[sampleIndex]));
 
