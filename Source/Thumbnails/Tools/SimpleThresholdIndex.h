@@ -3,8 +3,6 @@
 // Juce
 #include <JuceHeader.h>
 
-#include "../../GuiComponent.h"
-
 //------------------------------------------------------------------------------
 class SimpleThresholdIndex : public juce::Component,
                               private juce::Timer

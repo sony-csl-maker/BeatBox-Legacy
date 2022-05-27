@@ -28,6 +28,7 @@
 
 #include "Thumbnails/Tools/SimpleThresholdIndex.h"
 #include "Thumbnails/Tools/SimplePeakModelization.h"
+#include "Thumbnails/Tools/SimpleThumbnailComponent.h"
 //[/Headers]
 
 
@@ -40,14 +41,14 @@
     Describe your class and how it works here!
                                                                     //[/Comments]
 */
-class GuiComponent  : public Component,
-                      public Slider::Listener,
-                      public Button::Listener
+class GUIComponent  : public juce::Component,
+                      public juce::Slider::Listener,
+                      public juce::Button::Listener
 {
 public:
     //==============================================================================
-    GuiComponent ();
-    ~GuiComponent() override;
+    GUIComponent ();
+    ~GUIComponent() override;
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
@@ -58,7 +59,15 @@ public:
     void sliderValueChanged (Slider* sliderThatWasMoved) override;
     void buttonClicked (Button* buttonThatWasClicked) override;
 
+    void playButtonClicked()
+    {
+        //do somotehing here pls
+    }
 
+    void stopButtonClicked()
+    {
+        //do somotehing here pls
+    }
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
@@ -72,24 +81,21 @@ private:
     //[/UserVariables]
 
     //==============================================================================
+
     std::unique_ptr<Slider> smoothnessSlider;
-    std::unique_ptr<TextButton> convertBtn;
-    std::unique_ptr<TextButton> simulateBtn;
-    std::unique_ptr<ToggleButton> dumifyToggle;
     std::unique_ptr<Slider> thresholdSlider;
-    std::unique_ptr<Label> smoothnessLabel;
-    std::unique_ptr<Label> thresholdLabel;
-    std::unique_ptr<Label> snareLabel;
-    std::unique_ptr<TextButton> FileBtn;
-    std::unique_ptr<TextButton> playOrigBtn;
-    std::unique_ptr<TextButton> pauseOrigBtn;
-    std::unique_ptr<TextButton> playConvertBtn;
-    std::unique_ptr<TextButton> pauseConvertBtn;
+
+    std::unique_ptr<TextButton> convertBtn;
+
+    std::unique_ptr<TextButton> playBtn;
+    std::unique_ptr<TextButton> pauseBtn;
+
     std::unique_ptr<TextButton> downloadBtn;
 
+    bool status = false;
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GuiComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GUIComponent)
 };
 
 //[EndFile] You can add extra defines here...

@@ -1,7 +1,11 @@
 #pragma once
 
-// Juce
+#include <utility>
+
 #include <JuceHeader.h>
+
+#include "../ProcessorComponent.h"
+
 #include "Tools/SimplePositionOverlay.h"
 #include "Tools/SimpleThumbnailComponent.h"
 
@@ -83,10 +87,6 @@ public:
             transportSourceChanged();
     }
 
-    juce::File getFileLoaded()
-    {
-        return (file);
-    }
 
 private:
     enum TransportState
@@ -152,7 +152,8 @@ private:
 
             if (file != File{})
             {
-                auto* reader = formatManager.createReaderFor (file);
+                auto *reader = formatManager.createReaderFor (file);
+                juce::AudioSampleBuffer buffer(1, reader->lengthInSamples);
 
                 std::string filename = file.getFileNameWithoutExtension().toStdString();
 
@@ -163,6 +164,15 @@ private:
                     playButton.setEnabled (true);
                     thumbnailComp.setFile (file);
                     readerSource.reset (newSource.release());
+
+                    buffer.setSize ((int) reader->numChannels, (int) reader->lengthInSamples);
+                    reader->read (&buffer, 0, (int) reader->lengthInSamples, 0, true, true);
+
+                    prerequisites.first = buffer;
+                    prerequisites.second = reader;
+                    processor->sendData(prerequisites);
+                    processor->loadFile();
+
                 }
             }
         });
@@ -195,6 +205,10 @@ private:
     SimplePositionOverlay positionOverlay;
 
     juce::File file;
+
+    std::pair<juce::AudioSampleBuffer, juce::AudioFormatReader *> prerequisites;
+
+    std::unique_ptr<ProcessorComponent> processor = std::make_unique<ProcessorComponent>();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OriginalThumbnailComponent)
 };

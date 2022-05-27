@@ -6,7 +6,7 @@
 
 #include <JuceHeader.h>
 
-#include "GuiComponent.h"
+#include "GUIComponent.h"
 
 //==============================================================================
 
@@ -21,7 +21,7 @@ public:
 
     void initialise (const juce::String&) override
     {
-        mainWindow.reset (new MainWindow (getApplicationName(), new GuiComponent, *this));
+        mainWindow.reset (new MainWindow (getApplicationName(), new GUIComponent, *this));
     }
 
     void shutdown() override                         { mainWindow = nullptr; }

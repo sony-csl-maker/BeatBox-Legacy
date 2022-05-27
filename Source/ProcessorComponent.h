@@ -12,8 +12,6 @@
 // libtorch
 #include <torch/script.h>
 
-// BeatBoxComponent
-#include "BeatBoxComponent.h"
 
 //==============================================================================
 /*
@@ -22,33 +20,79 @@
 */
 
 //==============================================================================
-class ProcessorComponent : public juce::Component, public juce::Timer
+class ProcessorComponent : public juce::Timer
 {
 public:
     ProcessorComponent();
-
-    ~ProcessorComponent() override;
-
-    void paint(juce::Graphics &g) override;
-
-    void resized() override;
-
+    ~ProcessorComponent();
     void timerCallback() override;
 
+    bool isFileLoaded() { return fileWasLoaded; };
+    bool isOnsetsProcessed() { return onsetsProcessed; };
+    bool isPeaksProcessed() { return peaksProcessed; };
 
-    void updateThreshold();
+    void loadFile();
+    void loadModel();
 
-    void updateSmoothness();
+    void processOnsets();
+    void processPeaks(float value);
+
+    void extractPeaks();
+
+    juce::Array<float> encodeSample(juce::Array<float> audioBuffer, const int audioLength);
+    juce::Array<float> decodeSample(juce::Array<float> z_c_array_ptr);
+
+    juce::Array<float> processSamples(std::vector<float> sample);
+
+    void processAudioTrack();
+
+    void processOutputStream();
+
+    void downloadOriginalFile();
+    void downloadProcessedFile();
+    void downloadSamplesFile(long unsigned int sampleIndex);
+
+    void sendData(std::pair<juce::AudioSampleBuffer, juce::AudioFormatReader *> data) { _data = data; };
 
 
 private:
     //==========================================================================
+    std::vector<float> audioTimeSeries;
+    std::vector<float> encodedAudioTimeSeries;
 
-    juce::AudioFormatReader *_reader;
-    juce::AudioSampleBuffer _buffer;
+    std::vector<float> onsets;
+    std::vector<float> peaksIndex;
+    std::vector<float> peaksValues;
 
-    // GET Informations from BeatBox
-    std::unique_ptr<BeatBoxComponent> beatBox = std::make_unique<BeatBoxComponent>();
+    std::vector<std::pair<float, float>> startEnd;
+
+    std::vector<std::vector<float>> samplesTab;
+    std::vector<std::vector<float>> encodedSamplesTab;
+
+    std::string filename;
+    int _index = 0;
+
+    std::string encoderPath = "JUCE/examples/CMake/BeatBox/encoderOlesia15_r50_4.pt";
+    std::string decoderPath = "JUCE/examples/CMake/BeatBox/gen_noattr_128.pt";
+    torch::jit::script::Module encoder;
+    torch::jit::script::Module decoder;
+
+    Array<float> newZ;
+    Array<float> normalizedClasses;
+
+    std::pair<juce::AudioSampleBuffer, juce::AudioFormatReader *> _data;
+
+    int numberOfClasses = 128;
+    int numberOfDimensions = 3;
+
+    float smoothness = 0.0f;
+    float threshold = 9.5f;
+
+    int drumify = 0;
+
+    bool fileWasLoaded = false;
+    bool onsetsProcessed = false;
+    bool peaksProcessed = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ProcessorComponent)
 };
