@@ -28,13 +28,39 @@
 //[/MiscUserDefs]
 
 //==============================================================================
-GUIComponent::GUIComponent()
+GUIComponent::GUIComponent() :
+        state (Stopped),
+        thumbnailCache (5),
+        thumbnailComp (512, formatManager, thumbnailCache),
+        positionOverlay (transportSource)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    thumbnailOriginal.reset(new OriginalThumbnailComponent());
-    addAndMakeVisible(thumbnailOriginal.get());
+    // thumbnailOriginal.reset(new OriginalThumbnailComponent());
+    // addAndMakeVisible(thumbnailOriginal.get());
+
+    addAndMakeVisible (&openButtonT);
+    openButtonT.setButtonText ("Open...");
+    openButtonT.onClick = [this] { openButtonClicked(); };
+
+    addAndMakeVisible (&playButtonT);
+    playButtonT.setButtonText ("Play");
+    playButtonT.onClick = [this] { playButtonTClicked(); };
+    playButtonT.setColour (juce::TextButton::buttonColourId, juce::Colours::green);
+    playButtonT.setEnabled (false);
+
+    addAndMakeVisible (&stopButtonT);
+    stopButtonT.setButtonText ("Stop");
+    stopButtonT.onClick = [this] { stopButtonTClicked(); };
+    stopButtonT.setColour (juce::TextButton::buttonColourId, juce::Colours::red);
+    stopButtonT.setEnabled (false);
+
+    addAndMakeVisible (&thumbnailComp);
+    addAndMakeVisible (&positionOverlay);
+
+
+    ////////////////////////////////////////////////////////////////////////////
 
     thresholdIndex.reset(new SimpleThresholdIndex());
     addAndMakeVisible(thresholdIndex.get());
@@ -100,6 +126,13 @@ GUIComponent::GUIComponent()
 
     downloadBtn->setBounds(10, 750, 500, 20);
 
+    setSize (520, 880);
+
+    formatManager.registerBasicFormats();
+    transportSource.addChangeListener (this);
+
+    setAudioChannels (2, 2);
+
     //[UserPreSize]
     //[/UserPreSize]
 
@@ -122,6 +155,8 @@ GUIComponent::~GUIComponent()
 
     downloadBtn = nullptr;
 
+    shutdownAudio();
+
     //[Destructor]. You can add your own custom destruction code here..
     //[/Destructor]
 }
@@ -143,6 +178,14 @@ void GUIComponent::resized()
 {
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
+
+    openButtonT.setBounds (10, 10, getWidth() - 20, 20);
+    playButtonT.setBounds (10, 40, getWidth() - 20, 20);
+    stopButtonT.setBounds (10, 70, getWidth() - 20, 20);
+
+    juce::Rectangle<int> thumbnailBounds (10, 100, getWidth() - 20, 100);
+    thumbnailComp.setBounds (thumbnailBounds);
+    positionOverlay.setBounds (thumbnailBounds);
 
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
@@ -167,6 +210,8 @@ void GUIComponent::sliderValueChanged(Slider *sliderThatWasMoved)
         if (processor->isFileLoaded())
             processor->extractPeaks();
 
+        sleep(2);
+
         //[/UserButtonCode_thresholdSlider]
     }
 
@@ -184,6 +229,8 @@ void GUIComponent::sliderValueChanged(Slider *sliderThatWasMoved)
 
         if (processor->isFileLoaded())
             processor->extractPeaks();
+
+        sleep(2);
 
         //[/UserButtonCode_smoothnessSlider]
     }

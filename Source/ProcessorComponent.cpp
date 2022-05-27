@@ -32,6 +32,8 @@ void ProcessorComponent::loadFile()
 
 void ProcessorComponent::loadModel()
 {
+    std::cout << "ProcessorComponent::loadModel()" << std::endl;
+
     try
     {
         encoder = torch::jit::load(encoderPath);
