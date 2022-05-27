@@ -6,7 +6,7 @@
 
 #include <JuceHeader.h>
 
-#include "ProcessorComponent.h"
+#include "GUIComponent.h"
 
 //==============================================================================
 
@@ -21,7 +21,7 @@ public:
 
     void initialise (const juce::String&) override
     {
-        mainWindow.reset (new MainWindow (getApplicationName(), new ProcessorComponent, *this));
+        mainWindow.reset (new MainWindow (getApplicationName(), new GUIComponent, *this));
     }
 
     void shutdown() override                         { mainWindow = nullptr; }
@@ -43,7 +43,7 @@ private:
             setFullScreen (true);
            #else
             setResizable (true, false);
-            setResizeLimits (300, 250, 10000, 10000);
+            setResizeLimits (520, 880, 320, 680);
             centreWithSize (getWidth(), getHeight());
            #endif
 

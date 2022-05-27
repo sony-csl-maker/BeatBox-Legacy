@@ -2,129 +2,292 @@
 
 //==============================================================================
 ProcessorComponent::ProcessorComponent()
-    : _state(Stopped)
 {
-    addAndMakeVisible(&_openButton);
-    _openButton.setButtonText("Open from filesystem ...");
-    _openButton.onClick = [this]
-    { openButtonClicked(); };
-
-    addAndMakeVisible(&_playButton);
-    _playButton.setButtonText("Play");
-    _playButton.onClick = [this]
-    { playButtonClicked(); };
-    _playButton.setColour(juce::TextButton::buttonColourId, juce::Colours::green);
-    _playButton.setEnabled(false);
-
-    addAndMakeVisible(&_stopButton);
-    _stopButton.setButtonText("Stop");
-    _stopButton.onClick = [this]
-    { stopButtonClicked(); };
-    _stopButton.setColour(juce::TextButton::buttonColourId, juce::Colours::red);
-    _stopButton.setEnabled(false);
-
-    addAndMakeVisible(&_currentPositionLabel);
-    _currentPositionLabel.setText("Stopped", juce::dontSendNotification);
-
-    setSize(300, 600);
-
-    _formatManager.registerBasicFormats();
-    _transportSource.addChangeListener(this);
-
-    setAudioChannels(2, 2);
-    startTimer (20);
+    startTimer(50);
 }
 
 ProcessorComponent::~ProcessorComponent()
 {
-    // This shuts down the audio device and clears the audio source.
-    shutdownAudio();
-}
-
-//==============================================================================
-void ProcessorComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
-{
-    // This function will be called when the audio device is started, or when
-    // its settings (i.e. sample rate, block size, etc) are changed.
-
-    // You can use this function to initialise any resources you might need,
-    // but be careful - it will be called on the audio thread, not the GUI thread.
-
-    // For more details, see the help for AudioProcessor::prepareToPlay()
-    _transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
-}
-
-void ProcessorComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo &bufferToFill)
-{
-    // Your audio-processing code goes here!
-
-    // For more details, see the help for AudioProcessor::getNextAudioBlock()
-
-    // Right now we are not producing any data, in which case we need to clear the buffer
-    // (to prevent the output of random noise)
-    if (_readerSource.get() == nullptr)
-    {
-        bufferToFill.clearActiveBufferRegion();
-        return;
-    }
-
-    _transportSource.getNextAudioBlock(bufferToFill);
-}
-
-void ProcessorComponent::releaseResources()
-{
-    // This will be called when the audio device stops, or when it is being
-    // restarted due to a setting change.
-
-    // For more details, see the help for AudioProcessor::releaseResources()
-    _transportSource.releaseResources();
-}
-
-//==============================================================================
-void ProcessorComponent::paint(juce::Graphics &g)
-{
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
-}
-
-void ProcessorComponent::resized()
-{
-    // This is called when the ProcessorComponent is resized.
-    // If you add any child components, this is where you should
-    // update their positions.
-    _openButton.setBounds(10, 10, getWidth() - 20, 20);
-    _playButton.setBounds(10, 40, getWidth() - 20, 20);
-    _stopButton.setBounds(10, 70, getWidth() - 20, 20);
-    _currentPositionLabel.setBounds(10, 130, getWidth() - 20, 20);
 }
 
 void ProcessorComponent::timerCallback()
 {
-    if (_transportSource.isPlaying())
+
+}
+
+//==============================================================================
+void ProcessorComponent::loadFile()
+{
+    juce::AudioSampleBuffer buffer = _data.first;
+
+    std::cout << "ProcessorComponent::loadFile()" << std::endl;
+
+    for (int index = 0; index < buffer.getNumSamples(); index += 1)
+        audioTimeSeries.push_back(buffer.getSample(0, index));
+
+    fileWasLoaded = true;
+
+    loadModel();
+}
+
+void ProcessorComponent::loadModel()
+{
+    std::cout << "ProcessorComponent::loadModel()" << std::endl;
+
+    try
     {
-        juce::RelativeTime position(_transportSource.getCurrentPosition());
-
-        auto minutes = ((int)position.inMinutes()) % 60;
-        auto seconds = ((int)position.inSeconds()) % 60;
-        auto millis = ((int)position.inMilliseconds()) % 1000;
-
-        auto positionString = juce::String::formatted("%02d:%02d:%03d", minutes, seconds, millis);
-
-        _currentPositionLabel.setText(positionString, juce::dontSendNotification);
+        encoder = torch::jit::load(encoderPath);
+        decoder = torch::jit::load(decoderPath);
     }
-    else
+    catch (const c10::Error &e)
     {
-        _currentPositionLabel.setText("Paused", juce::dontSendNotification);
+        std::cerr << "Errors(s): " << e.what() << "\n";
+        exit(1);
     }
 }
 
-void ProcessorComponent::changeListenerCallback(juce::ChangeBroadcaster *source)
+void ProcessorComponent::processOnsets()
 {
-    if (source == &_transportSource)
+    std::cout << "ProcessorComponent::processOnsets()" << std::endl;
+
+    juce::AudioSampleBuffer buffer = _data.first;
+    juce::AudioFormatReader *reader = _data.second;
+
+    int prevSampleIndex = 0;
+    int sampleIndex = (int)reader->sampleRate / 100;
+
+    int frameSize = (int)reader->sampleRate / 100;
+    int sampleRate = 44100;
+    Gist<float> gist(frameSize, sampleRate);
+
+    for (int index = 0; index < buffer.getNumSamples(); index += 1)
     {
-        if (_transportSource.isPlaying())
-            changeState(Playing);
-        else
-            changeState(Stopped);
+        if (index % (int)reader->sampleRate / 100 == 0)
+        {
+            std::vector<float> sample(audioTimeSeries.begin() + prevSampleIndex, audioTimeSeries.begin() + sampleIndex);
+            gist.processAudioFrame(sample);
+            onsets.push_back(gist.energyDifference());
+            prevSampleIndex += (int)reader->sampleRate / 100;
+            sampleIndex += (int)reader->sampleRate / 100;
+        }
+    }
+    onsetsProcessed = true;
+}
+
+void ProcessorComponent::processPeaks(float value)
+{
+    std::cout << "ProcessorComponent::processPeaks()" << std::endl;
+
+    float last_peak = -1e10;
+    smoothness = value;
+
+    for (long unsigned int index = 0; index < onsets.size() - 1; index++)
+    {
+        if ((std::distance(onsets.begin() - smoothness, std::max_element(onsets.begin() - smoothness, onsets.end()) + smoothness) > (long int)index && (index - last_peak > 0)))
+        {
+            peaksIndex.push_back(index);
+            peaksValues.push_back(onsets[index]);
+            last_peak = index;
+        }
+    }
+
+    for (unsigned int index = 0; index < peaksIndex.size() - 1; index += 1)
+        peaksIndex[index] *= 441;
+
+    peaksProcessed = true;
+}
+
+void ProcessorComponent::extractPeaks()
+{
+    long unsigned int length = 24575;
+
+    for (long unsigned int index = 0; index < peaksIndex.size() - 1; index++)
+    {
+        if ((peaksIndex[index] + length) < audioTimeSeries.size())
+        {
+            startEnd.push_back({peaksIndex[index], peaksIndex[index] + length});
+        }
+    }
+}
+
+juce::Array<float> ProcessorComponent::encodeSample(Array<float> audioBuffer, const int audioLength)
+{
+    torch::Tensor tensor_wav = torch::from_blob(audioBuffer.data(), {1, audioLength});
+
+    std::vector<torch::jit::IValue> inputs;
+    inputs.push_back(tensor_wav);
+
+    torch::NoGradGuard no_grad;
+    torch::Tensor encoderOutput = encoder.forward(inputs).toTensor();
+
+    float *valuePtr = encoderOutput.data_ptr<float>();
+    Array<float> arrayValues(valuePtr, numberOfDimensions + numberOfClasses);
+
+    newZ.resize(numberOfDimensions);
+
+    for (int idx = 0; idx < numberOfDimensions; idx++)
+    {
+        newZ.set(idx, arrayValues[idx]);
+    }
+
+    normalizedClasses.resize(numberOfClasses);
+
+    for (int index = 0; index < numberOfClasses; index++)
+    {
+        normalizedClasses.set(index, arrayValues[index + numberOfDimensions]);
+    }
+    return (arrayValues);
+}
+
+juce::Array<float> ProcessorComponent::decodeSample(juce::Array<float> z_c_array_ptr)
+{
+    torch::Tensor tensor_z_c = torch::from_blob(z_c_array_ptr.data(), {1, numberOfDimensions + numberOfClasses}).clone();
+
+    std::vector<torch::jit::IValue> inputs;
+    inputs.push_back(tensor_z_c);
+
+    torch::NoGradGuard no_grad;
+    torch::Tensor decoderOutput = decoder.forward(inputs).toTensor();
+
+    float *value = decoderOutput.data_ptr<float>();
+    int sizeWav = 24575;
+    Array<float> arrayWav(value, sizeWav);
+
+    std::cout << "Decodede Sample number " << std::to_string(_index) << ": " << arrayWav.size() << std::endl;
+    _index += 1;
+
+    return (arrayWav);
+}
+
+juce::Array<float> ProcessorComponent::processSamples(std::vector<float> sample)
+{
+    juce::Array<float> transform;
+
+    for (auto it : sample)
+        transform.add(it);
+
+    juce::Array<float> encodedSample = encodeSample(transform, 24575);
+
+    return (decodeSample(encodedSample));
+}
+
+void ProcessorComponent::transferTrack()
+{
+    int index = 0;
+
+    for (auto it : startEnd)
+    {
+        std::vector<float> sample(audioTimeSeries.begin() + it.first, audioTimeSeries.begin() + it.second);
+        std::cout << "[TransferTrack] NON ENCODED : for sample " << std::to_string(index) << " " << it.first << " - " << it.second << std::endl;
+        samplesTab.push_back(sample); // 24575
+        index += 1;
+    }
+}
+
+void ProcessorComponent::processAudioTrack()
+{
+    transferTrack();
+
+    std::vector<Array<float>> tempSampleTab;
+
+    // the problem lies on samplesTab being empty :/ check from previous code if it's the case
+
+    for (size_t sampleIndex = 0; sampleIndex < samplesTab.size(); sampleIndex += 1)
+        tempSampleTab.push_back(processSamples(samplesTab[sampleIndex]));
+
+    encodedAudioTimeSeries.resize(audioTimeSeries.size());
+    std::fill(encodedAudioTimeSeries.begin(), encodedAudioTimeSeries.end(), 0.0f);
+
+    for (long unsigned int index = 0; index < startEnd.size(); index += 1)
+    {
+        for (long unsigned int sampleIndex = 0; sampleIndex < 24575; sampleIndex += 1)
+        {
+            encodedAudioTimeSeries[startEnd.at(index).first + sampleIndex] = tempSampleTab[index][sampleIndex];
+        }
+    }
+}
+
+void ProcessorComponent::downloadOriginalFile()
+{
+    juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + filename + "-orig" + ".wav");
+
+    Array<float> array;
+
+    for (auto it : audioTimeSeries)
+        array.add(it);
+
+    AudioBuffer<float> buffer(2, audioTimeSeries.size());
+
+    for (int index = 0; index < array.size(); index += 1)
+        buffer.setSample(0, index, array[index]);
+
+    juce::WavAudioFormat format;
+    std::unique_ptr<juce::AudioFormatWriter> writer;
+    writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
+                                        44100.0,
+                                        1,
+                                        16,
+                                        {},
+                                        0));
+    if (writer != nullptr)
+    {
+        std::cout << "Writing Origin file..." << std::endl;
+        writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
+    }
+}
+
+void ProcessorComponent::downloadProcessedFile()
+{
+    std::cout << "Downloading Processed file..." << std::endl;
+
+    juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + filename + "-transferred" + ".wav");
+    Array<float> array;
+
+    processAudioTrack();
+
+    for (auto it : encodedAudioTimeSeries)
+        array.add(it);
+
+    AudioBuffer<float> buffer(1, encodedAudioTimeSeries.size());
+
+    for (int index = 0; index < array.size(); index += 1)
+        buffer.setSample(0, index, array[index]);
+
+    juce::WavAudioFormat format;
+    std::unique_ptr<juce::AudioFormatWriter> writer;
+    writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
+                                        44100.0,
+                                        1,
+                                        16,
+                                        {},
+                                        0));
+    if (writer != nullptr)
+    {
+        std::cout << "Writing Transferred file..." << std::endl;
+        writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
+    }
+}
+
+void ProcessorComponent::downloadSamplesFile(long unsigned int sampleIndex)
+{
+    juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + filename + "-sample" + std::to_string(sampleIndex) + ".wav");
+    Array<float> array(processSamples(samplesTab.at(sampleIndex)));
+    AudioBuffer<float> buffer(2, 24575);
+
+    for (int index = 0; index < array.size(); index += 1)
+        buffer.setSample(0, index, array[index]);
+
+    juce::WavAudioFormat format;
+    std::unique_ptr<juce::AudioFormatWriter> writer;
+    writer.reset(format.createWriterFor(new juce::FileOutputStream(file),
+                                        44100.0,
+                                        1,
+                                        16,
+                                        {},
+                                        0));
+    if (writer != nullptr)
+    {
+        std::cout << "Writing Samples file..." << std::endl;
+        writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
     }
 }
