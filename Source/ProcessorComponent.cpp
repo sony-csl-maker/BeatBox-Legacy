@@ -171,8 +171,23 @@ juce::Array<float> ProcessorComponent::processSamples(std::vector<float> sample)
     return (decodeSample(encodedSample));
 }
 
+void ProcessorComponent::transferTrack()
+{
+    int index = 0;
+
+    for (auto it : startEnd)
+    {
+        std::vector<float> sample(audioTimeSeries.begin() + it.first, audioTimeSeries.begin() + it.second);
+        std::cout << "[TransferTrack] NON ENCODED : for sample " << std::to_string(index) << " " << it.first << " - " << it.second << std::endl;
+        samplesTab.push_back(sample); // 24575
+        index += 1;
+    }
+}
+
 void ProcessorComponent::processAudioTrack()
 {
+    transferTrack();
+
     std::vector<Array<float>> tempSampleTab;
 
     // the problem lies on samplesTab being empty :/ check from previous code if it's the case

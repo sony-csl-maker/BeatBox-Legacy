@@ -39,6 +39,8 @@ public:
 
     void extractPeaks();
 
+    void transferTrack();
+
     juce::Array<float> encodeSample(juce::Array<float> audioBuffer, const int audioLength);
     juce::Array<float> decodeSample(juce::Array<float> z_c_array_ptr);
 
