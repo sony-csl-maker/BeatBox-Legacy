@@ -75,6 +75,7 @@ GUIComponent::GUIComponent() :
     thresholdSlider->setRange(0, 10, 0.01);
     thresholdSlider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     thresholdSlider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    thresholdSlider->setChangeNotificationOnlyOnRelease(true);
     thresholdSlider->addListener(this);
 
     thresholdSlider->setBounds(70, 330, 190, 100);
@@ -85,6 +86,7 @@ GUIComponent::GUIComponent() :
     smoothnessSlider->setRange(0, 100, 0.01);
     smoothnessSlider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     smoothnessSlider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
+    smoothnessSlider->setChangeNotificationOnlyOnRelease(true);
     smoothnessSlider->addListener(this);
 
     smoothnessSlider->setBounds(250, 330, 190, 100);
@@ -94,6 +96,7 @@ GUIComponent::GUIComponent() :
     addAndMakeVisible(convertBtn.get());
     convertBtn->setButtonText(TRANS("Convert"));
     convertBtn->addListener(this);
+    convertBtn->setEnabled(true);
     convertBtn->setColour(juce::TextButton::buttonColourId, juce::Colour(0xff2f31ba));
 
     convertBtn->setBounds(10, 510, 500, 20);
@@ -122,6 +125,7 @@ GUIComponent::GUIComponent() :
     addAndMakeVisible(downloadBtn.get());
     downloadBtn->setButtonText(TRANS("Download"));
     downloadBtn->addListener(this);
+    downloadBtn->setEnabled(false);
     downloadBtn->setColour(juce::TextButton::buttonColourId, juce::Colours::blue);
 
     downloadBtn->setBounds(10, 750, 500, 20);
@@ -210,8 +214,6 @@ void GUIComponent::sliderValueChanged(Slider *sliderThatWasMoved)
         if (processor->isFileLoaded())
             processor->extractPeaks();
 
-        sleep(2);
-
         //[/UserButtonCode_thresholdSlider]
     }
 
@@ -230,8 +232,6 @@ void GUIComponent::sliderValueChanged(Slider *sliderThatWasMoved)
         if (processor->isFileLoaded())
             processor->extractPeaks();
 
-        sleep(2);
-
         //[/UserButtonCode_smoothnessSlider]
     }
 
@@ -248,10 +248,10 @@ void GUIComponent::buttonClicked(Button *buttonThatWasClicked)
     {
         //[UserButtonCode_convertBtn] -- add your button handler code here..
 
-        if (status) {
-            std::cout << "convertBtn pressed" << std::endl;
-            processor->processAudioTrack();
-        }
+        std::cout << "convertBtn pressed" << std::endl;
+        processor->processAudioTrack();
+
+        downloadBtn->setEnabled(true);
 
         //[/UserButtonCode_convertBtn]
     }
@@ -260,10 +260,8 @@ void GUIComponent::buttonClicked(Button *buttonThatWasClicked)
     {
         //[UserButtonCode_downloadBtn] -- add your button handler code here..
 
-        if (status) {
-            std::cout << "downloadBtn pressed" << std::endl;
-            processor->downloadProcessedFile();
-        }
+        std::cout << "downloadBtn pressed" << std::endl;
+        processor->downloadProcessedFile();
 
         //[/UserButtonCode_downloadBtn]
     }
