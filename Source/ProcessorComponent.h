@@ -27,6 +27,8 @@ public:
     ~ProcessorComponent();
     void timerCallback() override;
 
+    std::vector<float> getPeaksIndex() const { return peaksIndex; }
+
     bool isFileLoaded() { return fileWasLoaded; };
     bool isOnsetsProcessed() { return onsetsProcessed; };
     bool isPeaksProcessed() { return peaksProcessed; };
@@ -74,8 +76,8 @@ private:
     std::string filename;
     int _index = 0;
 
-    std::string encoderPath = "JUCE/examples/CMake/BeatBox/encoderOlesia15_r50_4.pt";
-    std::string decoderPath = "JUCE/examples/CMake/BeatBox/gen_noattr_128.pt";
+    std::string encoderPath = "SONYCSL_REPO/examples/CMake/BeatBox/encoderOlesia15_r50_4.pt";
+    std::string decoderPath = "SONYCSL_REPO/examples/CMake/BeatBox/gen_noattr_128.pt";
     torch::jit::script::Module encoder;
     torch::jit::script::Module decoder;
 

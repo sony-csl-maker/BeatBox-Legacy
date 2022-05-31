@@ -49,6 +49,7 @@ void ProcessorComponent::loadModel()
 void ProcessorComponent::processOnsets()
 {
     std::cout << "ProcessorComponent::processOnsets()" << std::endl;
+    onsets.clear();
 
     juce::AudioSampleBuffer buffer = _data.first;
     juce::AudioFormatReader *reader = _data.second;
@@ -76,7 +77,10 @@ void ProcessorComponent::processOnsets()
 
 void ProcessorComponent::processPeaks(float value)
 {
-    std::cout << "ProcessorComponent::processPeaks()" << std::endl;
+    std::cout << "ProcessorComponent::processPeaks() with value of " << value << std::endl;
+    peaksProcessed = false;
+    peaksValues.clear();
+    peaksIndex.clear();
 
     float last_peak = -1e10;
     smoothness = value;
@@ -99,6 +103,8 @@ void ProcessorComponent::processPeaks(float value)
 
 void ProcessorComponent::extractPeaks()
 {
+    std::cout << "ProcessorComponent::extractPeaks()" << std::endl;
+    startEnd.clear();
     long unsigned int length = 24575;
 
     for (long unsigned int index = 0; index < peaksIndex.size() - 1; index++)

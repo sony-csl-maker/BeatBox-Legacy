@@ -228,6 +228,7 @@ void GUIComponent::sliderValueChanged(Slider *sliderThatWasMoved)
             processor->processPeaks(smoothnessSlider->getValue());
 
         // peaksModelization->sendSmoothnessValue(smoothnessSlider->getValue());
+        peaksModelization->sendPeaksIndex(processor->getPeaksIndex());
 
         if (processor->isFileLoaded())
             processor->extractPeaks();

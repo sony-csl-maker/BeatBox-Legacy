@@ -10,7 +10,7 @@ class SimpleThresholdIndex : public juce::Component,
 public:
     SimpleThresholdIndex ()
     {
-        startTimer (40);
+        startTimer (4);
     }
 
     void paint (juce::Graphics& g) override

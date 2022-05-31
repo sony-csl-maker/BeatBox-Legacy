@@ -186,7 +186,7 @@ private:
                     prerequisites.second = reader;
                     processor->sendData(prerequisites);
                     processor->loadFile();
-
+                    peaksModelization->sendLengthOfTrack(reader->lengthInSamples);
                 }
             }
         });
