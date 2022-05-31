@@ -27,7 +27,8 @@ public:
     ~ProcessorComponent();
     void timerCallback() override;
 
-    std::vector<float> getPeaksIndex() const { return peaksIndex; }
+    std::vector<float> getPeaksIndex() const { return peaksIndex; };
+    Array<float> getCArray() const { return normalizedClasses; };
 
     bool isFileLoaded() { return fileWasLoaded; };
     bool isOnsetsProcessed() { return onsetsProcessed; };
@@ -47,6 +48,8 @@ public:
 
     juce::Array<float> encodeSample(juce::Array<float> audioBuffer, const int audioLength);
     juce::Array<float> decodeSample(juce::Array<float> z_c_array_ptr);
+
+    juce::Array<float> drumify(Array<float> &audioBuffer);
 
     juce::Array<float> processSamples(std::vector<float> sample);
 

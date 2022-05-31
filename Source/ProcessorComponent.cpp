@@ -144,7 +144,35 @@ juce::Array<float> ProcessorComponent::encodeSample(Array<float> audioBuffer, co
     {
         normalizedClasses.set(index, arrayValues[index + numberOfDimensions]);
     }
+    if (drumifyState) {
+        arrayValues = drumify(arrayValues);
+    }
+    for (auto kick : normalizedClasses)
+        std::cout << "normalizedClass: " << kick << std::endl;
     return (arrayValues);
+}
+
+juce::Array<float> ProcessorComponent::drumify(juce::Array<float> &audioBuffer)
+{
+    int tempIndex = -1;
+
+    for (int index = 0; index < numberOfClasses; index++) {
+        if (normalizedClasses[index] > 0.5) {
+            std::cout << "need drumify: " << index << std::endl;
+            tempIndex = index;
+        }
+    }
+    if (tempIndex != -1) {
+        for (int indexSec = 0; indexSec < numberOfClasses; indexSec++) {
+            if (indexSec == tempIndex) {
+                audioBuffer.set(numberOfDimensions + indexSec, 1);
+            } else {
+                audioBuffer.set(numberOfDimensions + tempIndex, 0);
+            }
+        }
+    }
+    return (audioBuffer);
+
 }
 
 juce::Array<float> ProcessorComponent::decodeSample(juce::Array<float> z_c_array_ptr)
@@ -248,7 +276,7 @@ void ProcessorComponent::downloadProcessedFile()
 {
     std::cout << "Downloading Processed file..." << std::endl;
 
-    juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + filename + "-transferred" + ".wav");
+    juce::File file("SONYCSL_REPO/examples/CMake/BeatBox/Musics/" + filename + "-transferred" + ".wav");
     Array<float> array;
 
     processAudioTrack();
