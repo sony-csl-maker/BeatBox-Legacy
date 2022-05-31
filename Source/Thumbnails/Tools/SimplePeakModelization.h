@@ -33,13 +33,13 @@ public:
     void paintFileLoaded(juce::Graphics &g) {
         g.fillAll (juce::Colours::white);
         g.setColour (juce::Colours::darkgrey);
-        // drawPeaks(g);
+        drawPeaks(g);
         g.drawFittedText (std::to_string(_peaksIndex.size()), getLocalBounds(), juce::Justification::centred, 1);
     }
 
     void drawPeaks(juce::Graphics &g) {
         for (auto peak : _peaksIndex) {
-            g.drawVerticalLine(peak * 500 / _lengthOfTrack, 0, 100);
+            g.drawVerticalLine(peak * 500 / _lengthOfTrack, 0, 600);
         }
     }
 

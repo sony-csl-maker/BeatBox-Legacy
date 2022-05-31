@@ -75,23 +75,25 @@ void ProcessorComponent::processOnsets()
     onsetsProcessed = true;
 }
 
-void ProcessorComponent::processPeaks(float value)
+void ProcessorComponent::processPeaks(float smoothnessValue, float tresholdValue)
 {
-    std::cout << "ProcessorComponent::processPeaks() with value of " << value << std::endl;
+    std::cout << "ProcessorComponent::processPeaks() with value of " << smoothnessValue << "and treshold of " << tresholdValue << std::endl;
     peaksProcessed = false;
     peaksValues.clear();
     peaksIndex.clear();
 
     float last_peak = -1e10;
-    smoothness = value;
+    smoothness = smoothnessValue;
 
     for (long unsigned int index = 0; index < onsets.size() - 1; index++)
     {
-        if ((std::distance(onsets.begin() - smoothness, std::max_element(onsets.begin() - smoothness, onsets.end()) + smoothness) > (long int)index && (index - last_peak > 0)))
+        if ((onsets[index] > onsets[index + 1]) && (onsets[index] > onsets[index - 1]) && (index - last_peak > 0))
         {
-            peaksIndex.push_back(index);
-            peaksValues.push_back(onsets[index]);
-            last_peak = index;
+            if (onsets[index] >= tresholdValue) {
+                peaksIndex.push_back(index);
+                peaksValues.push_back(onsets[index]);
+                last_peak = index;
+            }
         }
     }
 

@@ -186,7 +186,7 @@ private:
                     prerequisites.second = reader;
                     processor->sendData(prerequisites);
                     processor->loadFile();
-                    peaksModelization->sendLengthOfTrack(reader->lengthInSamples);
+                    peaksModelization->sendLengthOfTrack((long unsigned int)reader->lengthInSamples);
                 }
             }
         });
@@ -206,6 +206,8 @@ private:
     juce::TextButton openButtonT;
     juce::TextButton playButtonT;
     juce::TextButton stopButtonT;
+
+    std::unique_ptr<juce::ToggleButton> drumifyToggle;
 
     std::unique_ptr<juce::FileChooser> chooser;
 

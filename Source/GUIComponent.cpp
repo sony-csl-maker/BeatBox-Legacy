@@ -56,8 +56,15 @@ GUIComponent::GUIComponent() :
     stopButtonT.setColour (juce::TextButton::buttonColourId, juce::Colours::red);
     stopButtonT.setEnabled (false);
 
+    drumifyToggle.reset (new juce::ToggleButton ("drumify"));
+    addAndMakeVisible (drumifyToggle.get());
+    drumifyToggle->addListener (this);
+    drumifyToggle->setBounds(230, 460, 150, 24);
+
+
     addAndMakeVisible (&thumbnailComp);
     addAndMakeVisible (&positionOverlay);
+
 
 
     ////////////////////////////////////////////////////////////////////////////
@@ -78,19 +85,19 @@ GUIComponent::GUIComponent() :
     thresholdSlider->setChangeNotificationOnlyOnRelease(true);
     thresholdSlider->addListener(this);
 
-    thresholdSlider->setBounds(70, 330, 190, 100);
-    thresholdSlider->setValue(9.5);
+    thresholdSlider->setBounds(70, 350, 190, 100);
+    thresholdSlider->setValue(5);
 
     smoothnessSlider.reset(new juce::Slider("smoothnessSlider"));
     addAndMakeVisible(smoothnessSlider.get());
-    smoothnessSlider->setRange(0, 100, 0.01);
+    smoothnessSlider->setRange(0, 100, 1);
     smoothnessSlider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     smoothnessSlider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
     smoothnessSlider->setChangeNotificationOnlyOnRelease(true);
     smoothnessSlider->addListener(this);
 
-    smoothnessSlider->setBounds(250, 330, 190, 100);
-    smoothnessSlider->setValue(10.0);
+    smoothnessSlider->setBounds(250, 350, 190, 100);
+    smoothnessSlider->setValue(50);
 
     convertBtn.reset(new juce::TextButton("convertBtn"));
     addAndMakeVisible(convertBtn.get());
@@ -159,6 +166,8 @@ GUIComponent::~GUIComponent()
 
     downloadBtn = nullptr;
 
+    drumifyToggle = nullptr;
+
     shutdownAudio();
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -173,6 +182,30 @@ void GUIComponent::paint(Graphics &g)
     //[/UserPrePaint]
 
     g.fillAll(Colour(0xff333236));
+
+    {
+        int x = 247, y = 325, width = 200, height = 30;
+        juce::String text (TRANS("Smoothness"));
+        juce::Colour fillColour = juce::Colours::white;
+        //[UserPaintCustomArguments] Customize the painting arguments here..
+        //[/UserPaintCustomArguments]
+        g.setColour (fillColour);
+        g.setFont (juce::Font (15.00f, juce::Font::plain).withTypefaceStyle ("Regular"));
+        g.drawText (text, x, y, width, height,
+                    juce::Justification::centred, true);
+    }
+
+    {
+        int x = 62, y = 325, width = 200, height = 30;
+        juce::String text (TRANS("Treshold"));
+        juce::Colour fillColour = juce::Colours::white;
+        //[UserPaintCustomArguments] Customize the painting arguments here..
+        //[/UserPaintCustomArguments]
+        g.setColour (fillColour);
+        g.setFont (juce::Font (15.00f, juce::Font::plain).withTypefaceStyle ("Regular"));
+        g.drawText (text, x, y, width, height,
+                    juce::Justification::centred, true);
+    }
 
     //[UserPaint] Add your own custom painting code here..
     //[/UserPaint]
@@ -208,9 +241,10 @@ void GUIComponent::sliderValueChanged(Slider *sliderThatWasMoved)
             processor->processOnsets();
 
         thresholdIndex->sendThresholdValue(thresholdSlider->getValue());
+        peaksModelization->sendPeaksIndex(processor->getPeaksIndex());
 
         if (processor->isFileLoaded())
-            processor->processPeaks(smoothnessSlider->getValue());
+            processor->processPeaks(smoothnessSlider->getValue(), thresholdSlider->getValue());
         if (processor->isFileLoaded())
             processor->extractPeaks();
 
@@ -225,7 +259,7 @@ void GUIComponent::sliderValueChanged(Slider *sliderThatWasMoved)
             processor->processOnsets();
 
         if (processor->isFileLoaded())
-            processor->processPeaks(smoothnessSlider->getValue());
+            processor->processPeaks(smoothnessSlider->getValue(), thresholdSlider->getValue());
 
         // peaksModelization->sendSmoothnessValue(smoothnessSlider->getValue());
         peaksModelization->sendPeaksIndex(processor->getPeaksIndex());
@@ -244,6 +278,16 @@ void GUIComponent::buttonClicked(Button *buttonThatWasClicked)
 {
     //[UserbuttonClicked_Pre]
     //[/UserbuttonClicked_Pre]
+
+    if (buttonThatWasClicked == drumifyToggle.get())
+    {
+        //[UserButtonCode_juce__toggleButton] -- add your button handler code here..
+
+        std::cout << "toggle drumify pressed" << std::endl;
+        processor->toggleDrumify();
+
+        //[/UserButtonCode_juce__toggleButton]
+    }
 
     if (buttonThatWasClicked == convertBtn.get())
     {

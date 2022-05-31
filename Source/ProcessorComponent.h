@@ -37,11 +37,13 @@ public:
     void loadModel();
 
     void processOnsets();
-    void processPeaks(float value);
+    void processPeaks(float smoothnessValue, float treshold);
 
     void extractPeaks();
 
     void transferTrack();
+
+    void toggleDrumify() { drumifyState = !drumifyState; };
 
     juce::Array<float> encodeSample(juce::Array<float> audioBuffer, const int audioLength);
     juce::Array<float> decodeSample(juce::Array<float> z_c_array_ptr);
@@ -86,13 +88,13 @@ private:
 
     std::pair<juce::AudioSampleBuffer, juce::AudioFormatReader *> _data;
 
-    int numberOfClasses = 128;
-    int numberOfDimensions = 3;
+    int numberOfClasses = 3;
+    int numberOfDimensions = 128;
 
-    float smoothness = 0.0f;
-    float threshold = 9.5f;
+    int smoothness = 50;
+    float threshold = 5.0f;
 
-    int drumify = 0;
+    bool drumifyState = false;
 
     bool fileWasLoaded = false;
     bool onsetsProcessed = false;
