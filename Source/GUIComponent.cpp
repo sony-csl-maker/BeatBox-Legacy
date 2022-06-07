@@ -40,8 +40,14 @@ GUIComponent::GUIComponent() :
     // thumbnailOriginal.reset(new OriginalThumbnailComponent());
     // addAndMakeVisible(thumbnailOriginal.get());
 
+    startTimer(100);
+
+    // getLookAndFeel().setColour(juce::Slider::thumbColourId, juce::Colours::antiquewhite);
+    // setLookAndFeel(&otherLookAndFeel);
+
+
     addAndMakeVisible (&openButtonT);
-    openButtonT.setButtonText ("Open...");
+    openButtonT.setButtonText ("Load a file");
     openButtonT.onClick = [this] { openButtonClicked(); };
 
     addAndMakeVisible (&playButtonT);
@@ -59,7 +65,7 @@ GUIComponent::GUIComponent() :
     drumifyToggle.reset (new juce::ToggleButton ("drumify"));
     addAndMakeVisible (drumifyToggle.get());
     drumifyToggle->addListener (this);
-    drumifyToggle->setBounds(230, 460, 150, 24);
+    drumifyToggle->setBounds(230, 420, 150, 24);
 
 
     addAndMakeVisible (&thumbnailComp);
@@ -71,33 +77,37 @@ GUIComponent::GUIComponent() :
 
     thresholdIndex.reset(new SimpleThresholdIndex());
     addAndMakeVisible(thresholdIndex.get());
-    thresholdIndex->setBounds(10, 100, 500, 100);
+    thresholdIndex->setBounds(10, 70, 500, 100);
 
     peaksModelization.reset(new SimplePeakModelization());
     addAndMakeVisible(peaksModelization.get());
-    peaksModelization->setBounds(10, 210, 500, 100);
+    peaksModelization->setBounds(10, 175, 500, 40);
 
     thresholdSlider.reset(new juce::Slider("thresholdSlider"));
     addAndMakeVisible(thresholdSlider.get());
     thresholdSlider->setRange(0, 10, 0.01);
+    thresholdSlider->setTooltip(TRANS("Use it to ignore peaks under a certain energy"));
     thresholdSlider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     thresholdSlider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
     thresholdSlider->setChangeNotificationOnlyOnRelease(true);
     thresholdSlider->addListener(this);
 
-    thresholdSlider->setBounds(70, 350, 190, 100);
+    thresholdSlider->setBounds(70, 310, 190, 100);
     thresholdSlider->setValue(5);
+    thresholdSlider->setLookAndFeel(&otherLookAndFeel);
 
     smoothnessSlider.reset(new juce::Slider("smoothnessSlider"));
     addAndMakeVisible(smoothnessSlider.get());
     smoothnessSlider->setRange(0, 100, 1);
+    smoothnessSlider->setTooltip(TRANS("Use it to set the range used to determine the maximum value of each peaks pack"));
     smoothnessSlider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     smoothnessSlider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 20);
     smoothnessSlider->setChangeNotificationOnlyOnRelease(true);
     smoothnessSlider->addListener(this);
 
-    smoothnessSlider->setBounds(250, 350, 190, 100);
+    smoothnessSlider->setBounds(250, 310, 190, 100);
     smoothnessSlider->setValue(50);
+    smoothnessSlider->setLookAndFeel(&otherLookAndFeel);
 
     convertBtn.reset(new juce::TextButton("convertBtn"));
     addAndMakeVisible(convertBtn.get());
@@ -106,36 +116,37 @@ GUIComponent::GUIComponent() :
     convertBtn->setEnabled(true);
     convertBtn->setColour(juce::TextButton::buttonColourId, juce::Colour(0xff2f31ba));
 
-    convertBtn->setBounds(10, 510, 500, 20);
+    convertBtn->setBounds(180, 470, 520 - 360, 30);
 
-    playBtn.reset(new juce::TextButton("playBtn"));
-    addAndMakeVisible(playBtn.get());
-    playBtn->setButtonText(TRANS("Play"));
-    playBtn->onClick = [this]
-    { playButtonClicked(); };
-    playBtn->setEnabled(false);
-    playBtn->setColour(juce::TextButton::buttonColourId, juce::Colours::green);
+    // playBtn.reset(new juce::TextButton("playBtn"));
+    // addAndMakeVisible(playBtn.get());
+    // playBtn->setButtonText(TRANS("Play"));
+    // playBtn->onClick = [this]
+    // { playButtonClicked(); };
+    // playBtn->setEnabled(false)
+    // playBtn->setColour(juce::TextButton::buttonColourId, juce::Colours::green);
+    // // playBtn->setLookAndFeel(&otherLookAndFeel);
 
-    playBtn->setBounds(10, 550, 500, 20);
+    // playBtn->setBounds(80, 250, 50, 30);
 
-    pauseBtn.reset(new juce::TextButton("pauseBtn"));
-    addAndMakeVisible(pauseBtn.get());
-    pauseBtn->setButtonText(TRANS("Pause"));
-    pauseBtn->onClick = [this]
-    { playButtonClicked(); };
-    pauseBtn->setEnabled(false);
-    pauseBtn->setColour(juce::TextButton::buttonColourId, juce::Colours::red);
+    // pauseBtn.reset(new juce::TextButton("pauseBtn"));
+    // addAndMakeVisible(pauseBtn.get());
+    // pauseBtn->setButtonText(TRANS("Pause"));
+    // pauseBtn->onClick = [this]
+    // { playButtonClicked(); };
+    // pauseBtn->setEnabled(false);
+    // pauseBtn->setColour(juce::TextButton::buttonColourId, juce::Colours::red);
 
-    pauseBtn->setBounds(10, 580, 500, 20);
+    // pauseBtn->setBounds(10, 580, 500, 20);
 
     downloadBtn.reset(new juce::TextButton("downloadBtn"));
     addAndMakeVisible(downloadBtn.get());
     downloadBtn->setButtonText(TRANS("Download"));
     downloadBtn->addListener(this);
     downloadBtn->setEnabled(false);
-    downloadBtn->setColour(juce::TextButton::buttonColourId, juce::Colours::blue);
+    downloadBtn->setColour(juce::TextButton::buttonColourId, juce::Colours::orange);
 
-    downloadBtn->setBounds(10, 750, 500, 20);
+    downloadBtn->setBounds(180, 750, 520 - 360, 30);
 
     setSize (520, 880);
 
@@ -181,31 +192,42 @@ void GUIComponent::paint(Graphics &g)
     //[UserPrePaint] Add your own custom painting code here..
     //[/UserPrePaint]
 
-    g.fillAll(Colour(0xff333236));
+    g.fillAll(juce::Colours::black);
+
+    // {
+    //     int x = 247, y = 325, width = 200, height = 30;
+    //     juce::String text (TRANS("Smoothness"));
+    //     juce::Colour fillColour = juce::Colours::white;
+    //     //[UserPaintCustomArguments] Customize the painting arguments here..
+    //     //[/UserPaintCustomArguments]
+    //     g.setColour (fillColour);
+    //     g.setFont (juce::Font (15.00f, juce::Font::plain).withTypefaceStyle ("Regular"));
+    //     g.drawText (text, x, y, width, height,
+    //                 juce::Justification::centred, true);
+    // }
+
+    // {
+    //     int x = 62, y = 325, width = 200, height = 30;
+    //     juce::String text (TRANS("Treshold"));
+    //     juce::Colour fillColour = juce::Colours::white;
+    //     //[UserPaintCustomArguments] Customize the painting arguments here..
+    //     //[/UserPaintCustomArguments]
+    //     g.setColour (fillColour);
+    //     g.setFont (juce::Font (15.00f, juce::Font::plain).withTypefaceStyle ("Regular"));
+    //     g.drawText (text, x, y, width, height,
+    //                 juce::Justification::centred, true);
+    // }
 
     {
-        int x = 247, y = 325, width = 200, height = 30;
-        juce::String text (TRANS("Smoothness"));
-        juce::Colour fillColour = juce::Colours::white;
-        //[UserPaintCustomArguments] Customize the painting arguments here..
-        //[/UserPaintCustomArguments]
-        g.setColour (fillColour);
-        g.setFont (juce::Font (15.00f, juce::Font::plain).withTypefaceStyle ("Regular"));
-        g.drawText (text, x, y, width, height,
-                    juce::Justification::centred, true);
+        float x = 0, y = 0, width = 520.0f, height = 480.0f;
+        g.setColour(juce::Colours::white);
+        g.drawRoundedRectangle (x, y, width, height, 10.000f, 5.000f);
+    }
+    {
+        float x = 0, y = 490, width = 520.0f, height = 300.0f;
+        g.drawRoundedRectangle (x, y, width, height, 10.000f, 5.000f);
     }
 
-    {
-        int x = 62, y = 325, width = 200, height = 30;
-        juce::String text (TRANS("Treshold"));
-        juce::Colour fillColour = juce::Colours::white;
-        //[UserPaintCustomArguments] Customize the painting arguments here..
-        //[/UserPaintCustomArguments]
-        g.setColour (fillColour);
-        g.setFont (juce::Font (15.00f, juce::Font::plain).withTypefaceStyle ("Regular"));
-        g.drawText (text, x, y, width, height,
-                    juce::Justification::centred, true);
-    }
 
     //[UserPaint] Add your own custom painting code here..
     //[/UserPaint]
@@ -216,11 +238,12 @@ void GUIComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    openButtonT.setBounds (10, 10, getWidth() - 20, 20);
-    playButtonT.setBounds (10, 40, getWidth() - 20, 20);
-    stopButtonT.setBounds (10, 70, getWidth() - 20, 20);
+    openButtonT.setBounds (180, 10, getWidth() - 360, 30);
+    playButtonT.setBounds(200, 250, 50, 30);
+    stopButtonT.setBounds(270, 250, 50, 30);
 
-    juce::Rectangle<int> thumbnailBounds (10, 100, getWidth() - 20, 100);
+
+    juce::Rectangle<int> thumbnailBounds (10, 70, getWidth() - 20, 100);
     thumbnailComp.setBounds (thumbnailBounds);
     positionOverlay.setBounds (thumbnailBounds);
 
@@ -237,16 +260,11 @@ void GUIComponent::sliderValueChanged(Slider *sliderThatWasMoved)
     {
         //[UserButtonCode_thresholdSlider] -- add your slider handler code here..
 
-        if (processor->isFileLoaded())
+        if (processor->isFileLoaded()) {
             processor->processOnsets();
-
-        thresholdIndex->sendThresholdValue(thresholdSlider->getValue());
-        peaksModelization->sendPeaksIndex(processor->getPeaksIndex());
-
-        if (processor->isFileLoaded())
             processor->processPeaks(smoothnessSlider->getValue(), thresholdSlider->getValue());
-        if (processor->isFileLoaded())
             processor->extractPeaks();
+        }
 
         //[/UserButtonCode_thresholdSlider]
     }
@@ -255,17 +273,11 @@ void GUIComponent::sliderValueChanged(Slider *sliderThatWasMoved)
     {
         //[UserButtonCode_smoothnessSlider] -- add your slider handler code here..
 
-        if (processor->isFileLoaded())
+        if (processor->isFileLoaded()) {
             processor->processOnsets();
-
-        if (processor->isFileLoaded())
             processor->processPeaks(smoothnessSlider->getValue(), thresholdSlider->getValue());
-
-        // peaksModelization->sendSmoothnessValue(smoothnessSlider->getValue());
-        peaksModelization->sendPeaksIndex(processor->getPeaksIndex());
-
-        if (processor->isFileLoaded())
             processor->extractPeaks();
+        }
 
         //[/UserButtonCode_smoothnessSlider]
     }
@@ -313,4 +325,10 @@ void GUIComponent::buttonClicked(Button *buttonThatWasClicked)
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
+}
+
+void GUIComponent::timerCallback()
+{
+    thresholdIndex->sendThresholdValue(thresholdSlider->getValue());
+    peaksModelization->sendPeaksIndex(processor->getPeaksIndex());
 }

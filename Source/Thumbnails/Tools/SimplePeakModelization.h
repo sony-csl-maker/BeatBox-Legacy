@@ -25,27 +25,28 @@ public:
     }
 
     void paintNoFileLoaded(juce::Graphics &g) {
-        g.fillAll (juce::Colours::white);
-        g.setColour (juce::Colours::darkgrey);
+        g.fillAll (juce::Colours::black);
         g.drawFittedText ("No File Loaded", getLocalBounds(), juce::Justification::centred, 1);
     }
 
     void paintFileLoaded(juce::Graphics &g) {
-        g.fillAll (juce::Colours::white);
-        g.setColour (juce::Colours::darkgrey);
+        g.fillAll (juce::Colours::black);
+        g.setColour (juce::Colours::orange);
         drawPeaks(g);
-        g.drawFittedText (std::to_string(_peaksIndex.size()), getLocalBounds(), juce::Justification::centred, 1);
+        g.drawFittedText (std::to_string(_peaksIndex.size() - 1), getLocalBounds(), juce::Justification::centred, 1);
     }
 
     void drawPeaks(juce::Graphics &g) {
+        int index = 0;
         for (auto peak : _peaksIndex) {
-            g.drawVerticalLine(peak * 500 / _lengthOfTrack, 0, 600);
+            if (index != _peaksIndex.size() - 1)
+                g.drawVerticalLine(peak * 500 / _lengthOfTrack, 0, 600);
+            index++;
         }
     }
 
     void sendPeaksIndex(std::vector<float> peaksIndex)
     {
-        std::cout << "send peaks index" << std::endl;
         _peaksIndex = peaksIndex;
     }
 

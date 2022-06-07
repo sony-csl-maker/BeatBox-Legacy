@@ -30,6 +30,8 @@
 #include "Thumbnails/Tools/SimplePositionOverlay.h"
 #include "Thumbnails/Tools/SimpleThresholdIndex.h"
 #include "Thumbnails/Tools/SimpleThumbnailComponent.h"
+#include "Style/OtherLookAndFeel.hpp"
+
 //[/Headers]
 
 
@@ -45,7 +47,8 @@
 class GUIComponent  : public juce::AudioAppComponent,
                       public juce::ChangeListener,
                       public juce::Slider::Listener,
-                      public juce::Button::Listener
+                      public juce::Button::Listener,
+                      public juce::Timer
 {
 public:
     //==============================================================================
@@ -56,6 +59,7 @@ public:
     //[UserMethods]     -- You can add your own custom methods in this section.
     //[/UserMethods]
 
+    void timerCallback() override;
 
     void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override
     {
@@ -186,6 +190,8 @@ private:
                     prerequisites.second = reader;
                     processor->sendData(prerequisites);
                     processor->loadFile();
+                    processor->processOnsets();
+                    processor->processPeaks(smoothnessSlider->getValue(), thresholdSlider->getValue());                    processor->transferTrack();
                     peaksModelization->sendLengthOfTrack((long unsigned int)reader->lengthInSamples);
                 }
             }
@@ -247,6 +253,8 @@ private:
     std::unique_ptr<TextButton> pauseBtn;
 
     std::unique_ptr<TextButton> downloadBtn;
+
+    OtherLookAndFeel otherLookAndFeel;
 
     bool status = false;
 

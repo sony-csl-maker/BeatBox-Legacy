@@ -20,6 +20,8 @@ void ProcessorComponent::loadFile()
 {
     juce::AudioSampleBuffer buffer = _data.first;
 
+    audioTimeSeries.clear();
+
     std::cout << "ProcessorComponent::loadFile()" << std::endl;
 
     for (int index = 0; index < buffer.getNumSamples(); index += 1)

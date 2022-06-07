@@ -23,7 +23,7 @@ public:
             auto audioPosition = (float) transportSource.getCurrentPosition();
             auto drawPosition = (audioPosition / duration) * (float) getWidth();
 
-            g.setColour (juce::Colours::green);
+            g.setColour (juce::Colours::red);
             g.drawLine (drawPosition, 0.0f, drawPosition, (float) getHeight(), 2.0f);
         }
     }

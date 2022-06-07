@@ -15,14 +15,12 @@ public:
 
     void paint (juce::Graphics& g) override
     {
-        g.setColour (juce::Colours::black);
+        g.setColour (juce::Colours::orange);
 
         g.drawHorizontalLine(50 - (threshold) * 5, 0, 200);
         g.drawHorizontalLine(50 + (threshold) * 5, 0, 200);
-
         g.drawHorizontalLine(50 - (threshold) * 5, 200, 300);
         g.drawHorizontalLine(50 + (threshold) * 5, 200, 300);
-
         g.drawHorizontalLine(50 - (threshold) * 5, 300, 500);
         g.drawHorizontalLine(50 + (threshold) * 5, 300, 500);
     }

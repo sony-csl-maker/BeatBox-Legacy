@@ -31,16 +31,15 @@ public:
 
     void paintIfNoFileLoaded (juce::Graphics& g)
     {
-        g.fillAll (juce::Colours::white);
-        g.setColour (juce::Colours::darkgrey);
-        g.drawFittedText ("No File Loaded", getLocalBounds(), juce::Justification::centred, 1);
+        g.fillAll (juce::Colours::black);
+        g.setColour (juce::Colours::white);
+        g.drawFittedText ("Please load a file", getLocalBounds(), juce::Justification::centred, 1);
     }
 
     void paintIfFileLoaded (juce::Graphics& g)
     {
-        g.fillAll (juce::Colours::white);
-
-        g.setColour (juce::Colours::red);
+        g.fillAll (juce::Colours::black);
+        g.setColour (juce::Colours::white);
         thumbnail.drawChannels (g, getLocalBounds(), 0.0, thumbnail.getTotalLength(), 1.0f);
     }
 
