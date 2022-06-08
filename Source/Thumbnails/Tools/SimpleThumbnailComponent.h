@@ -21,6 +21,12 @@ public:
         thumbnail.setSource (new juce::FileInputSource (file));
     }
 
+    void setSource(const juce::AudioBuffer<float> &buffer)
+    {
+        thumbnail.reset(1, 44100);
+        thumbnail.addBlock(0, buffer, 0, buffer.getNumSamples());
+    }
+
     void paint (juce::Graphics& g) override
     {
         if (thumbnail.getNumChannels() == 0)

@@ -50,49 +50,24 @@ public:
         g.fillPath (p);
     }
 
-    void drawButtonBackground (juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour,
-                               bool, bool isButtonDown) override
-    {
-        auto radius = (float) juce::jmin (30 / 2, 30 / 2) - 4.0f;
-        auto centreX = (float) 100 + (float) 30  * 0.5f;
-        auto centreY = (float) 100 + (float) 30 * 0.5f;
-        auto rx = centreX - radius;
-        auto ry = centreY - radius;
-        auto rw = radius * 2.0f;
-        // auto angle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
+    // void drawButtonBackground (juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour,
+    //                            bool, bool isButtonDown) override
+    // {
+    //     auto radius = (float) juce::jmin (30 / 2, 30 / 2) - 4.0f;
+    //     auto centreX = (float) 100 + (float) 30  * 0.5f;
+    //     auto centreY = (float) 100 + (float) 30 * 0.5f;
+    //     auto rx = centreX - radius;
+    //     auto ry = centreY - radius;
+    //     auto rw = radius * 2.0f;
+    //     // auto angle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
 
-        // fill
-        g.setColour (backgroundColour);
-        g.fillEllipse (rx, ry, rw, rw);
-        button.setColour(juce::TextButton::buttonColourId, backgroundColour);
-        g.setColour (juce::Colours::yellow);
-        g.drawEllipse (rx, ry, rw, rw, 3.0f);
-    }
-
-    void drawToggleButton (Graphics& g, ToggleButton& button,
-                                           bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override
-    {
-        auto fontSize = jmin (15.0f, (float) button.getHeight() * 0.75f);
-        auto tickWidth = fontSize * 1.1f;
-
-        drawTickBox (g, button, 4.0f, ((float) button.getHeight() - tickWidth) * 0.5f,
-                     tickWidth, tickWidth,
-                     button.getToggleState(),
-                     button.isEnabled(),
-                     shouldDrawButtonAsHighlighted,
-                     shouldDrawButtonAsDown);
-
-        g.setColour (button.findColour (ToggleButton::textColourId));
-        g.setFont (fontSize);
-
-        if (! button.isEnabled())
-            g.setOpacity (0.5f);
-
-        g.drawFittedText (button.getButtonText(),
-                          button.getLocalBounds().withTrimmedLeft (roundToInt (tickWidth) + 10)
-                                                 .withTrimmedRight (2),
-                          Justification::centredLeft, 10);
-    }
+    //     // fill
+    //     g.setColour (backgroundColour);
+    //     g.fillEllipse (rx, ry, rw, rw);
+    //     button.setColour(juce::TextButton::buttonColourId, backgroundColour);
+    //     g.setColour (juce::Colours::yellow);
+    //     g.drawEllipse (rx, ry, rw, rw, 3.0f);
+    // }
 };
 
 

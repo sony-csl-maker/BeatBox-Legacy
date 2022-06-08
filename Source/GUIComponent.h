@@ -222,13 +222,20 @@ private:
     juce::AudioTransportSource transportSource;
     TransportState state;
 
+    juce::AudioTransportSource resultTransportSource;
+    TransportState resultState;
+
     juce::AudioThumbnailCache thumbnailCache;
     SimpleThumbnailComponent thumbnailComp;
     SimplePositionOverlay positionOverlay;
 
+    SimpleThumbnailComponent thumbnailResultComp;
+
     juce::File file;
 
     std::pair<juce::AudioSampleBuffer, juce::AudioFormatReader *> prerequisites;
+
+    juce::AudioBuffer<float> _convertedBuffer;
 
     // std::unique_ptr<ProcessorComponent> processor = std::make_unique<ProcessorComponent>();
 

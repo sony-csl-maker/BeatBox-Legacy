@@ -29,6 +29,7 @@ public:
 
     std::vector<float> getPeaksIndex() const { return peaksIndex; };
     Array<float> getCArray() const { return normalizedClasses; };
+    AudioBuffer<float> getConvertBuffer() const { return _convertedBuffer; };
 
     bool isFileLoaded() { return fileWasLoaded; };
     bool isOnsetsProcessed() { return onsetsProcessed; };
@@ -90,6 +91,8 @@ private:
     Array<float> normalizedClasses;
 
     std::pair<juce::AudioSampleBuffer, juce::AudioFormatReader *> _data;
+
+    juce::AudioBuffer<float> _convertedBuffer;
 
     int numberOfClasses = 3;
     int numberOfDimensions = 128;

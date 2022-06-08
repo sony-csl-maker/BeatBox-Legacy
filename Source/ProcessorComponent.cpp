@@ -243,6 +243,13 @@ void ProcessorComponent::processAudioTrack()
             encodedAudioTimeSeries[startEnd.at(index).first + sampleIndex] = tempSampleTab[index][sampleIndex];
         }
     }
+
+    AudioBuffer<float> buffer(1, encodedAudioTimeSeries.size());
+
+    for (long unsigned int index = 0; index < encodedAudioTimeSeries.size(); index += 1)
+        buffer.setSample(0, index, encodedAudioTimeSeries[index]);
+
+    _convertedBuffer = buffer;
 }
 
 void ProcessorComponent::downloadOriginalFile()

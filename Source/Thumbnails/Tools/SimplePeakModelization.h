@@ -37,7 +37,7 @@ public:
     }
 
     void drawPeaks(juce::Graphics &g) {
-        int index = 0;
+        long unsigned int index = 0;
         for (auto peak : _peaksIndex) {
             if (index != _peaksIndex.size() - 1)
                 g.drawVerticalLine(peak * 500 / _lengthOfTrack, 0, 600);

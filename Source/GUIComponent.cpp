@@ -32,7 +32,8 @@ GUIComponent::GUIComponent() :
         state (Stopped),
         thumbnailCache (5),
         thumbnailComp (512, formatManager, thumbnailCache),
-        positionOverlay (transportSource)
+        positionOverlay (transportSource),
+        thumbnailResultComp(512, formatManager, thumbnailCache)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
@@ -70,6 +71,8 @@ GUIComponent::GUIComponent() :
 
     addAndMakeVisible (&thumbnailComp);
     addAndMakeVisible (&positionOverlay);
+
+    addAndMakeVisible(&thumbnailResultComp);
 
 
 
@@ -118,26 +121,25 @@ GUIComponent::GUIComponent() :
 
     convertBtn->setBounds(180, 470, 520 - 360, 30);
 
-    // playBtn.reset(new juce::TextButton("playBtn"));
-    // addAndMakeVisible(playBtn.get());
-    // playBtn->setButtonText(TRANS("Play"));
-    // playBtn->onClick = [this]
-    // { playButtonClicked(); };
-    // playBtn->setEnabled(false)
-    // playBtn->setColour(juce::TextButton::buttonColourId, juce::Colours::green);
-    // // playBtn->setLookAndFeel(&otherLookAndFeel);
+    playBtn.reset(new juce::TextButton("playBtn"));
+    addAndMakeVisible(playBtn.get());
+    playBtn->setButtonText(TRANS("Play"));
+    playBtn->onClick = [this]
+    { playButtonClicked(); };
+    playBtn->setEnabled(false);
+    playBtn->setColour(juce::TextButton::buttonColourId, juce::Colours::green);
 
-    // playBtn->setBounds(80, 250, 50, 30);
+    playBtn->setBounds(200, 650, 50, 30);
 
-    // pauseBtn.reset(new juce::TextButton("pauseBtn"));
-    // addAndMakeVisible(pauseBtn.get());
-    // pauseBtn->setButtonText(TRANS("Pause"));
-    // pauseBtn->onClick = [this]
-    // { playButtonClicked(); };
-    // pauseBtn->setEnabled(false);
-    // pauseBtn->setColour(juce::TextButton::buttonColourId, juce::Colours::red);
+    pauseBtn.reset(new juce::TextButton("pauseBtn"));
+    addAndMakeVisible(pauseBtn.get());
+    pauseBtn->setButtonText(TRANS("Stop"));
+    pauseBtn->onClick = [this]
+    { playButtonClicked(); };
+    pauseBtn->setEnabled(false);
+    pauseBtn->setColour(juce::TextButton::buttonColourId, juce::Colours::red);
 
-    // pauseBtn->setBounds(10, 580, 500, 20);
+    pauseBtn->setBounds(270, 650, 50, 30);
 
     downloadBtn.reset(new juce::TextButton("downloadBtn"));
     addAndMakeVisible(downloadBtn.get());
@@ -247,6 +249,10 @@ void GUIComponent::resized()
     thumbnailComp.setBounds (thumbnailBounds);
     positionOverlay.setBounds (thumbnailBounds);
 
+    juce::Rectangle<int> thumbnailResultBounds (10, 530, getWidth() - 20, 100);
+    thumbnailResultComp.setBounds (thumbnailResultBounds);
+    // positionOverlay.setBounds (thumbnailBounds);
+
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -309,6 +315,7 @@ void GUIComponent::buttonClicked(Button *buttonThatWasClicked)
         processor->processAudioTrack();
 
         downloadBtn->setEnabled(true);
+        thumbnailResultComp.setSource(processor->getConvertBuffer());
 
         //[/UserButtonCode_convertBtn]
     }
