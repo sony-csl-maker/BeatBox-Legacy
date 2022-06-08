@@ -87,9 +87,9 @@ void ProcessorComponent::processPeaks(float smoothnessValue, float tresholdValue
     float last_peak = -1e10;
     smoothness = smoothnessValue;
 
-    for (long unsigned int index = 0; index < onsets.size() - 1; index++)
+    for (long unsigned int index = smoothness; index < onsets.size() - 1; index++)
     {
-        if ((onsets[index] > onsets[index + 1]) && (onsets[index] > onsets[index - 1]) && (index - last_peak > 0))
+        if (isLocalMaximum(index, smoothnessValue))
         {
             if (onsets[index] >= tresholdValue) {
                 peaksIndex.push_back(index);
@@ -103,6 +103,15 @@ void ProcessorComponent::processPeaks(float smoothnessValue, float tresholdValue
         peaksIndex[index] *= 441;
 
     peaksProcessed = true;
+}
+
+bool ProcessorComponent::isLocalMaximum(int index, int smoothnessValue)
+{
+    for (long unsigned int cpt = index - smoothnessValue; cpt <= index + smoothnessValue; cpt = cpt + 1) {
+        if (onsets[cpt] > onsets[index])
+            return false;
+    }
+    return true;
 }
 
 void ProcessorComponent::extractPeaks()

@@ -41,6 +41,8 @@ public:
     void processOnsets();
     void processPeaks(float smoothnessValue, float treshold);
 
+    bool isLocalMaximum(int index, int smoothness);
+
     void extractPeaks();
 
     void transferTrack();

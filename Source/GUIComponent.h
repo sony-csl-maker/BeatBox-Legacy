@@ -64,25 +64,31 @@ public:
     void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override
     {
         transportSource.prepareToPlay (samplesPerBlockExpected, sampleRate);
+        resultTransportSource.prepareToPlay (samplesPerBlockExpected, sampleRate);
     }
 
     void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override
     {
         if (readerSource.get() == nullptr)
             bufferToFill.clearActiveBufferRegion();
-        else
+        else {
             transportSource.getNextAudioBlock (bufferToFill);
+            resultTransportSource.getNextAudioBlock (bufferToFill);
+        }
     }
 
     void releaseResources() override
     {
         transportSource.releaseResources();
+        resultTransportSource.releaseResources();
     }
 
     void changeListenerCallback (juce::ChangeBroadcaster* source) override
     {
         if (source == &transportSource)
             transportSourceChanged();
+        if (source == &resultTransportSource)
+            resultTransportSourceChanged();
     }
 
 
@@ -95,19 +101,19 @@ public:
 
     void playButtonClicked()
     {
-        //do somotehing here pls
+        changeResultState(Starting);
     }
 
     void stopButtonClicked()
     {
-        //do somotehing here pls
+        changeResultState(Stopping);
     }
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     // GET Informations from processor
 
-        enum TransportState
+    enum TransportState
     {
         Stopped,
         Starting,
@@ -148,12 +154,53 @@ private:
         }
     }
 
+    void changeResultState (TransportState newState)
+    {
+        if (resultState != newState)
+        {
+            resultState = newState;
+
+            switch (resultState)
+            {
+                case Stopped:
+                    stopBtn.setEnabled (false);
+                    playBtn.setEnabled (true);
+                    resultTransportSource.setPosition (0.0);
+                    break;
+
+                case Starting:
+                    playBtn.setEnabled (false);
+                    resultTransportSource.start();
+                    break;
+
+                case Playing:
+                    stopBtn.setEnabled (true);
+                    break;
+
+                case Stopping:
+                    resultTransportSource.stop();
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+
     void transportSourceChanged()
     {
         if (transportSource.isPlaying())
             changeState (Playing);
         else
             changeState (Stopped);
+    }
+
+    void resultTransportSourceChanged()
+    {
+        if (resultTransportSource.isPlaying())
+            changeResultState (Playing);
+        else
+            changeResultState (Stopped);
     }
 
     void openButtonClicked()
@@ -213,6 +260,10 @@ private:
     juce::TextButton playButtonT;
     juce::TextButton stopButtonT;
 
+
+    juce::TextButton playBtn;
+    juce::TextButton stopBtn;
+
     std::unique_ptr<juce::ToggleButton> drumifyToggle;
 
     std::unique_ptr<juce::FileChooser> chooser;
@@ -255,9 +306,6 @@ private:
     std::unique_ptr<Slider> thresholdSlider;
 
     std::unique_ptr<TextButton> convertBtn;
-
-    std::unique_ptr<TextButton> playBtn;
-    std::unique_ptr<TextButton> pauseBtn;
 
     std::unique_ptr<TextButton> downloadBtn;
 

@@ -121,25 +121,23 @@ GUIComponent::GUIComponent() :
 
     convertBtn->setBounds(180, 470, 520 - 360, 30);
 
-    playBtn.reset(new juce::TextButton("playBtn"));
-    addAndMakeVisible(playBtn.get());
-    playBtn->setButtonText(TRANS("Play"));
-    playBtn->onClick = [this]
+    addAndMakeVisible(&playBtn);
+    playBtn.setButtonText(TRANS("Play"));
+    playBtn.onClick = [this]
     { playButtonClicked(); };
-    playBtn->setEnabled(false);
-    playBtn->setColour(juce::TextButton::buttonColourId, juce::Colours::green);
+    playBtn.setEnabled(false);
+    playBtn.setColour(juce::TextButton::buttonColourId, juce::Colours::green);
 
-    playBtn->setBounds(200, 650, 50, 30);
+    playBtn.setBounds(200, 650, 50, 30);
 
-    pauseBtn.reset(new juce::TextButton("pauseBtn"));
-    addAndMakeVisible(pauseBtn.get());
-    pauseBtn->setButtonText(TRANS("Stop"));
-    pauseBtn->onClick = [this]
-    { playButtonClicked(); };
-    pauseBtn->setEnabled(false);
-    pauseBtn->setColour(juce::TextButton::buttonColourId, juce::Colours::red);
+    addAndMakeVisible(&stopBtn);
+    stopBtn.setButtonText(TRANS("Stop"));
+    stopBtn.onClick = [this]
+    { stopButtonClicked(); };
+    stopBtn.setEnabled(false);
+    stopBtn.setColour(juce::TextButton::buttonColourId, juce::Colours::red);
 
-    pauseBtn->setBounds(270, 650, 50, 30);
+    stopBtn.setBounds(270, 650, 50, 30);
 
     downloadBtn.reset(new juce::TextButton("downloadBtn"));
     addAndMakeVisible(downloadBtn.get());
@@ -154,6 +152,7 @@ GUIComponent::GUIComponent() :
 
     formatManager.registerBasicFormats();
     transportSource.addChangeListener (this);
+    resultTransportSource.addChangeListener(this);
 
     setAudioChannels (2, 2);
 
@@ -173,9 +172,6 @@ GUIComponent::~GUIComponent()
 
     smoothnessSlider = nullptr;
     thresholdSlider = nullptr;
-
-    playBtn = nullptr;
-    pauseBtn = nullptr;
 
     downloadBtn = nullptr;
 
@@ -316,6 +312,7 @@ void GUIComponent::buttonClicked(Button *buttonThatWasClicked)
 
         downloadBtn->setEnabled(true);
         thumbnailResultComp.setSource(processor->getConvertBuffer());
+        playBtn.setEnabled(true);
 
         //[/UserButtonCode_convertBtn]
     }
