@@ -203,6 +203,37 @@ private:
             changeResultState (Stopped);
     }
 
+    void openAudioTrack()
+    {
+        juce::File resultFile(processor->getPath() + "/examples/CMake/BeatBox/Musics/.temp/" + pathToFile);
+
+        auto *reader = formatManager.createReaderFor (resultFile);
+        juce::AudioSampleBuffer buffer(1, reader->lengthInSamples);
+
+        std::string filename = file.getFileNameWithoutExtension().toStdString();
+        processor->setFilename(filename);
+
+        if (reader != nullptr)
+        {
+            auto newSource = std::make_unique<juce::AudioFormatReaderSource> (reader, true);
+            resultTransportSource.setSource (newSource.get(), 0, nullptr, reader->sampleRate);
+            playBtn.setEnabled (true);
+            thumbnailComp.setFile (resultFile);
+            readerSource.reset (newSource.release());
+
+            buffer.setSize ((int) reader->numChannels, (int) reader->lengthInSamples);
+            reader->read (&buffer, 0, (int) reader->lengthInSamples, 0, true, true);
+
+            prerequisites.first = buffer;
+            prerequisites.second = reader;
+            processor->sendData(prerequisites);
+            processor->loadFile();
+            processor->processOnsets();
+            processor->processPeaks(smoothnessSlider->getValue(), thresholdSlider->getValue());                    processor->transferTrack();
+            peaksModelization->sendLengthOfTrack((long unsigned int)reader->lengthInSamples);
+        }
+    }
+
     void openButtonClicked()
     {
         chooser = std::make_unique<juce::FileChooser> ("Select a Wave file to play...",
@@ -221,6 +252,7 @@ private:
                 juce::AudioSampleBuffer buffer(1, reader->lengthInSamples);
 
                 std::string filename = file.getFileNameWithoutExtension().toStdString();
+                processor->setFilename(filename);
 
                 if (reader != nullptr)
                 {
@@ -260,6 +292,7 @@ private:
     juce::TextButton playButtonT;
     juce::TextButton stopButtonT;
 
+    std::string pathToFile;
 
     juce::TextButton playBtn;
     juce::TextButton stopBtn;

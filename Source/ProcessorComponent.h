@@ -5,6 +5,7 @@
 
 // std
 #include <utility>
+#include <filesystem>
 
 // gist
 #include "Gist.h"
@@ -66,6 +67,12 @@ public:
 
     void sendData(std::pair<juce::AudioSampleBuffer, juce::AudioFormatReader *> data) { _data = data; };
 
+    void setFilename(std::string name ) { filename = name; };
+    std::string getFilename() { return filename; };
+
+    std::string getPath() { return (basePath); };
+    void setTemporaryPath(std::string path) { temporaryPath = path; };
+    std::string getTempFilename() { return temporaryPath; };
 
 private:
     //==========================================================================
@@ -82,10 +89,12 @@ private:
     std::vector<std::vector<float>> encodedSamplesTab;
 
     std::string filename;
+    std::string temporaryPath;
     int _index = 0;
 
-    std::string encoderPath = "SONYCSL_REPO/examples/CMake/BeatBox/encoderOlesia15_r50_4.pt";
-    std::string decoderPath = "SONYCSL_REPO/examples/CMake/BeatBox/gen_noattr_128.pt";
+    std::string basePath = std::filesystem::current_path().string();
+    std::string encoderPath = basePath + "/examples/CMake/BeatBox/encoderOlesia15_r50_4.pt";
+    std::string decoderPath = basePath + "/examples/CMake/BeatBox/gen_noattr_128.pt";
     torch::jit::script::Module encoder;
     torch::jit::script::Module decoder;
 

@@ -21,6 +21,9 @@
 #
 # ==============================================================================
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
 juce_add_gui_app(BeatBox
     BUNDLE_ID                       com.juce.beatbox
     ICON_BIG                        ${CMAKE_CURRENT_SOURCE_DIR}/JUCEAppIcon.png

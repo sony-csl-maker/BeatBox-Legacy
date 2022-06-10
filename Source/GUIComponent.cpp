@@ -192,30 +192,6 @@ void GUIComponent::paint(Graphics &g)
 
     g.fillAll(juce::Colours::black);
 
-    // {
-    //     int x = 247, y = 325, width = 200, height = 30;
-    //     juce::String text (TRANS("Smoothness"));
-    //     juce::Colour fillColour = juce::Colours::white;
-    //     //[UserPaintCustomArguments] Customize the painting arguments here..
-    //     //[/UserPaintCustomArguments]
-    //     g.setColour (fillColour);
-    //     g.setFont (juce::Font (15.00f, juce::Font::plain).withTypefaceStyle ("Regular"));
-    //     g.drawText (text, x, y, width, height,
-    //                 juce::Justification::centred, true);
-    // }
-
-    // {
-    //     int x = 62, y = 325, width = 200, height = 30;
-    //     juce::String text (TRANS("Treshold"));
-    //     juce::Colour fillColour = juce::Colours::white;
-    //     //[UserPaintCustomArguments] Customize the painting arguments here..
-    //     //[/UserPaintCustomArguments]
-    //     g.setColour (fillColour);
-    //     g.setFont (juce::Font (15.00f, juce::Font::plain).withTypefaceStyle ("Regular"));
-    //     g.drawText (text, x, y, width, height,
-    //                 juce::Justification::centred, true);
-    // }
-
     {
         float x = 0, y = 0, width = 520.0f, height = 480.0f;
         g.setColour(juce::Colours::white);
@@ -314,6 +290,13 @@ void GUIComponent::buttonClicked(Button *buttonThatWasClicked)
         thumbnailResultComp.setSource(processor->getConvertBuffer());
         playBtn.setEnabled(true);
 
+        pathToFile = processor->getFilename();
+
+        processor->setFilename(".temp/" + pathToFile);
+        processor->downloadProcessedFile();
+
+        openAudioTrack();
+
         //[/UserButtonCode_convertBtn]
     }
 
@@ -322,6 +305,8 @@ void GUIComponent::buttonClicked(Button *buttonThatWasClicked)
         //[UserButtonCode_downloadBtn] -- add your button handler code here..
 
         std::cout << "downloadBtn pressed" << std::endl;
+
+        processor->setFilename(pathToFile);
         processor->downloadProcessedFile();
 
         //[/UserButtonCode_downloadBtn]

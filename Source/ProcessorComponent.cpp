@@ -263,7 +263,7 @@ void ProcessorComponent::processAudioTrack()
 
 void ProcessorComponent::downloadOriginalFile()
 {
-    juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + filename + "-orig" + ".wav");
+    juce::File file(getPath() + "/examples/CMake/BeatBox/Musics/" + filename + "-orig" + ".wav");
 
     Array<float> array;
 
@@ -294,7 +294,7 @@ void ProcessorComponent::downloadProcessedFile()
 {
     std::cout << "Downloading Processed file..." << std::endl;
 
-    juce::File file("SONYCSL_REPO/examples/CMake/BeatBox/Musics/" + filename + "-transferred" + ".wav");
+    juce::File file(getPath() + "/examples/CMake/BeatBox/Musics/" + filename + "-transferred" + ".wav");
     Array<float> array;
 
     processAudioTrack();
@@ -324,7 +324,7 @@ void ProcessorComponent::downloadProcessedFile()
 
 void ProcessorComponent::downloadSamplesFile(long unsigned int sampleIndex)
 {
-    juce::File file("JUCE/examples/CMake/BeatBox/Musics/" + filename + "-sample" + std::to_string(sampleIndex) + ".wav");
+    juce::File file(getPath() + "/examples/CMake/BeatBox/Musics/" + filename + "-sample" + std::to_string(sampleIndex) + ".wav");
     Array<float> array(processSamples(samplesTab.at(sampleIndex)));
     AudioBuffer<float> buffer(2, 24575);
 
