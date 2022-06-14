@@ -31,6 +31,7 @@ public:
     std::vector<float> getPeaksIndex() const { return peaksIndex; };
     Array<float> getCArray() const { return normalizedClasses; };
     AudioBuffer<float> getConvertBuffer() const { return _convertedBuffer; };
+    AudioBuffer<float> getFilteredOnsets() const { return filteredOnsets; };
 
     bool isFileLoaded() { return fileWasLoaded; };
     bool isOnsetsProcessed() { return onsetsProcessed; };
@@ -82,6 +83,7 @@ private:
     std::vector<float> onsets;
     std::vector<float> peaksIndex;
     std::vector<float> peaksValues;
+    juce::AudioBuffer<float> filteredOnsets;
 
     std::vector<std::pair<float, float>> startEnd;
 

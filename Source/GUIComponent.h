@@ -229,7 +229,8 @@ private:
             processor->sendData(prerequisites);
             processor->loadFile();
             processor->processOnsets();
-            processor->processPeaks(smoothnessSlider->getValue(), thresholdSlider->getValue());                    processor->transferTrack();
+            processor->processPeaks(smoothnessSlider->getValue(), thresholdSlider->getValue());
+            processor->transferTrack();
             peaksModelization->sendLengthOfTrack((long unsigned int)reader->lengthInSamples);
         }
     }
@@ -270,8 +271,10 @@ private:
                     processor->sendData(prerequisites);
                     processor->loadFile();
                     processor->processOnsets();
-                    processor->processPeaks(smoothnessSlider->getValue(), thresholdSlider->getValue());                    processor->transferTrack();
+                    processor->processPeaks(smoothnessSlider->getValue(), thresholdSlider->getValue());
+                    processor->transferTrack();
                     peaksModelization->sendLengthOfTrack((long unsigned int)reader->lengthInSamples);
+                    onsetThumbnail.setSource(processor->getFilteredOnsets());
                 }
             }
         });
@@ -314,6 +317,8 @@ private:
     SimplePositionOverlay positionOverlay;
 
     SimpleThumbnailComponent thumbnailResultComp;
+
+    SimpleThumbnailComponent onsetThumbnail;
 
     juce::File file;
 

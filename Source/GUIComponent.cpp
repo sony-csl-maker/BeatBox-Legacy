@@ -33,7 +33,8 @@ GUIComponent::GUIComponent() :
         thumbnailCache (5),
         thumbnailComp (512, formatManager, thumbnailCache),
         positionOverlay (transportSource),
-        thumbnailResultComp(512, formatManager, thumbnailCache)
+        thumbnailResultComp(512, formatManager, thumbnailCache),
+        onsetThumbnail(512, formatManager, thumbnailCache)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
@@ -69,10 +70,12 @@ GUIComponent::GUIComponent() :
     drumifyToggle->setBounds(230, 420, 150, 24);
 
 
-    addAndMakeVisible (&thumbnailComp);
-    addAndMakeVisible (&positionOverlay);
+    // addAndMakeVisible (&thumbnailComp);
+    // addAndMakeVisible (&positionOverlay);
 
     addAndMakeVisible(&thumbnailResultComp);
+
+    addAndMakeVisible(&onsetThumbnail);
 
 
 
@@ -83,7 +86,7 @@ GUIComponent::GUIComponent() :
     thresholdIndex->setBounds(10, 70, 500, 100);
 
     peaksModelization.reset(new SimplePeakModelization());
-    addAndMakeVisible(peaksModelization.get());
+    // addAndMakeVisible(peaksModelization.get());
     peaksModelization->setBounds(10, 175, 500, 40);
 
     thresholdSlider.reset(new juce::Slider("thresholdSlider"));
@@ -221,8 +224,12 @@ void GUIComponent::resized()
     thumbnailComp.setBounds (thumbnailBounds);
     positionOverlay.setBounds (thumbnailBounds);
 
+    juce::Rectangle<int> onsetThumbnailBounds (10, 190, getWidth() - 20, 100);
+    onsetThumbnail.setBounds (onsetThumbnailBounds);
+
     juce::Rectangle<int> thumbnailResultBounds (10, 530, getWidth() - 20, 100);
     thumbnailResultComp.setBounds (thumbnailResultBounds);
+
     // positionOverlay.setBounds (thumbnailBounds);
 
     //[UserResized] Add your own custom resize handling here..

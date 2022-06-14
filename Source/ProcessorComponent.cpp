@@ -79,10 +79,14 @@ void ProcessorComponent::processOnsets()
 
 void ProcessorComponent::processPeaks(float smoothnessValue, float tresholdValue)
 {
+    int cpt = 0;
     std::cout << "ProcessorComponent::processPeaks() with value of " << smoothnessValue << "and treshold of " << tresholdValue << std::endl;
     peaksProcessed = false;
     peaksValues.clear();
     peaksIndex.clear();
+    filteredOnsets.clear();
+
+    std::vector<float> tmpFilteredOnset;
 
     float last_peak = -1e10;
     smoothness = smoothnessValue;
@@ -91,13 +95,22 @@ void ProcessorComponent::processPeaks(float smoothnessValue, float tresholdValue
     {
         if (isLocalMaximum(index, smoothnessValue))
         {
+            tmpFilteredOnset.push_back(onsets[index]);
             if (onsets[index] >= tresholdValue) {
                 peaksIndex.push_back(index);
                 peaksValues.push_back(onsets[index]);
                 last_peak = index;
             }
+            cpt++;
         }
     }
+
+    juce::AudioBuffer<float> buffer(1, tmpFilteredOnset.size());
+    for (int elem = 0; elem < tmpFilteredOnset.size(); elem++)
+        buffer.setSample(0, elem, tmpFilteredOnset[elem]);
+
+    filteredOnsets = buffer;
+    std::cout << "filteredOnsets size : " << filteredOnsets.getNumSamples() << std::endl;
 
     for (unsigned int index = 0; index < peaksIndex.size() - 1; index += 1)
         peaksIndex[index] *= 441;
