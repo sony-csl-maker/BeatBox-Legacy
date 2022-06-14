@@ -73,7 +73,7 @@ public:
             bufferToFill.clearActiveBufferRegion();
         else {
             transportSource.getNextAudioBlock (bufferToFill);
-            resultTransportSource.getNextAudioBlock (bufferToFill);
+            // resultTransportSource.getNextAudioBlock (bufferToFill);
         }
     }
 
@@ -205,32 +205,20 @@ private:
 
     void openAudioTrack()
     {
-        juce::File resultFile(processor->getPath() + "/examples/CMake/BeatBox/Musics/.temp/" + pathToFile);
+        juce::File resultFile(processor->getPath() + "/examples/CMake/BeatBox/Musics/.temp/JUCE_Demo_Audio_Recording2-transferred.wav");
 
         auto *reader = formatManager.createReaderFor (resultFile);
-        juce::AudioSampleBuffer buffer(1, reader->lengthInSamples);
+        // juce::AudioSampleBuffer buffer(1, reader->lengthInSamples);
 
-        std::string filename = file.getFileNameWithoutExtension().toStdString();
-        processor->setFilename(filename);
+        // std::string filename = file.getFileNameWithoutExtension().toStdString();
 
         if (reader != nullptr)
         {
+            std::cout << "reader" << std::endl;
             auto newSource = std::make_unique<juce::AudioFormatReaderSource> (reader, true);
             resultTransportSource.setSource (newSource.get(), 0, nullptr, reader->sampleRate);
             playBtn.setEnabled (true);
-            thumbnailComp.setFile (resultFile);
             readerSource.reset (newSource.release());
-
-            buffer.setSize ((int) reader->numChannels, (int) reader->lengthInSamples);
-            reader->read (&buffer, 0, (int) reader->lengthInSamples, 0, true, true);
-
-            prerequisites.first = buffer;
-            prerequisites.second = reader;
-            processor->sendData(prerequisites);
-            processor->loadFile();
-            processor->processOnsets();
-            processor->processPeaks(smoothnessSlider->getValue(), thresholdSlider->getValue());                    processor->transferTrack();
-            peaksModelization->sendLengthOfTrack((long unsigned int)reader->lengthInSamples);
         }
     }
 
