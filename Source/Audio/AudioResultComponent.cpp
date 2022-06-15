@@ -32,13 +32,10 @@ AudioResultComponent::AudioResultComponent() :
         state (Stopped),
         thumbnailCache (5),
         thumbnailComp (512, formatManager, thumbnailCache),
-        positionOverlay (transportSource),
-        thumbnailResultComp(512, formatManager, thumbnailCache)
+        positionOverlay (transportSource)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
-
-    startTimer(100);
 
     addAndMakeVisible (&thumbnailComp);
     addAndMakeVisible (&positionOverlay);

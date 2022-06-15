@@ -54,8 +54,6 @@ public:
     //[UserMethods]     -- You can add your own custom methods in this section.
     //[/UserMethods]
 
-    void timerCallback() override;
-
     void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override
     {
         transportSource.prepareToPlay (samplesPerBlockExpected, sampleRate);
@@ -83,8 +81,6 @@ public:
 
     void paint (Graphics& g) override;
     void resized() override;
-    void sliderValueChanged (Slider* sliderThatWasMoved) override;
-    void buttonClicked (Button* buttonThatWasClicked) override;
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
@@ -151,20 +147,20 @@ private:
         if (reader != nullptr)
         {
             auto newSource = std::make_unique<juce::AudioFormatReaderSource> (reader, true);
-            resultTransportSource.setSource (newSource.get(), 0, nullptr, reader->sampleRate);
-            playBtn.setEnabled (true);
+            transportSource.setSource (newSource.get(), 0, nullptr, reader->sampleRate);
+            playButton.setEnabled (true);
             readerSource.reset (newSource.release());
         }
     }
 
     void playButtonClicked()
     {
-        changeResultState(Starting);
+        changeState(Starting);
     }
 
     void stopButtonClicked()
     {
-        changeResultState(Stopping);
+        changeState(Stopping);
     }
 
     std::string pathToFile;
