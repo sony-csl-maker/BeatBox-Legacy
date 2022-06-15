@@ -208,17 +208,14 @@ private:
         juce::File resultFile(processor->getPath() + "/examples/CMake/BeatBox/Musics/.temp/JUCE_Demo_Audio_Recording2-transferred.wav");
 
         auto *reader = formatManager.createReaderFor (resultFile);
-        // juce::AudioSampleBuffer buffer(1, reader->lengthInSamples);
-
-        // std::string filename = file.getFileNameWithoutExtension().toStdString();
 
         if (reader != nullptr)
         {
-            std::cout << "reader" << std::endl;
-            auto newSource = std::make_unique<juce::AudioFormatReaderSource> (reader, true);
-            resultTransportSource.setSource (newSource.get(), 0, nullptr, reader->sampleRate);
-            playBtn.setEnabled (true);
-            readerSource.reset (newSource.release());
+            // std::cout << "reader" << std::endl;
+            // auto newSource = std::make_unique<juce::AudioFormatReaderSource> (reader, true);
+            // resultTransportSource.setSource (newSource.get(), 0, nullptr, reader->sampleRate);
+            // playBtn.setEnabled (true);
+            // readerSource.reset (newSource.release());
         }
     }
 
@@ -258,7 +255,7 @@ private:
                     processor->sendData(prerequisites);
                     processor->loadFile();
                     processor->processOnsets();
-                    processor->processPeaks(smoothnessSlider->getValue(), thresholdSlider->getValue());                    processor->transferTrack();
+                    processor->processPeaks(smoothnessSlider->getValue(), thresholdSlider->getValue());
                     peaksModelization->sendLengthOfTrack((long unsigned int)reader->lengthInSamples);
                 }
             }

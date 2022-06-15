@@ -13,6 +13,8 @@
 // libtorch
 #include <torch/script.h>
 
+#include "EncoderComponent.hpp"
+
 
 //==============================================================================
 /*
@@ -116,6 +118,10 @@ private:
     bool fileWasLoaded = false;
     bool onsetsProcessed = false;
     bool peaksProcessed = false;
+
+    std::unique_ptr<EncoderComponent> encoderComponent;
+
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ProcessorComponent)
 };

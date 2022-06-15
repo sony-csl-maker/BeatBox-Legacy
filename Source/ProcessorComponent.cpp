@@ -159,7 +159,7 @@ juce::Array<float> ProcessorComponent::encodeSample(Array<float> audioBuffer, co
         arrayValues = drumify(arrayValues);
     }
     for (auto kick : normalizedClasses)
-        std::cout << "normalizedClass: " << kick << std::endl;
+        std::cout << "[Encode sampple] normalizedClass: " << kick << std::endl;
     return (arrayValues);
 }
 
@@ -200,7 +200,7 @@ juce::Array<float> ProcessorComponent::decodeSample(juce::Array<float> z_c_array
     int sizeWav = 24575;
     Array<float> arrayWav(value, sizeWav);
 
-    std::cout << "Decodede Sample number " << std::to_string(_index) << ": " << arrayWav.size() << std::endl;
+    std::cout << "[Decode sample] Decodede Sample number " << std::to_string(_index) << ": " << arrayWav.size() << std::endl;
     _index += 1;
 
     return (arrayWav);
@@ -233,6 +233,8 @@ void ProcessorComponent::transferTrack()
 
 void ProcessorComponent::processAudioTrack()
 {
+    encoderComponent = std::make_unique<EncoderComponent>();
+    if (encoderComponent->runThread()) {
     transferTrack();
 
     std::vector<Array<float>> tempSampleTab;
@@ -259,6 +261,7 @@ void ProcessorComponent::processAudioTrack()
         buffer.setSample(0, index, encodedAudioTimeSeries[index]);
 
     _convertedBuffer = buffer;
+    }
 }
 
 void ProcessorComponent::downloadOriginalFile()
@@ -297,7 +300,7 @@ void ProcessorComponent::downloadProcessedFile()
     juce::File file(getPath() + "/examples/CMake/BeatBox/Musics/" + filename + "-transferred" + ".wav");
     Array<float> array;
 
-    processAudioTrack();
+    // processAudioTrack();
 
     for (auto it : encodedAudioTimeSeries)
         array.add(it);
