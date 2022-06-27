@@ -24,11 +24,8 @@
 
 #include <JuceHeader.h>
 
-#include "ProcessorComponent.h"
+#include "../ProcessorComponent.h"
 
-#include "Thumbnails/Tools/SimplePeakModelization.h"
-#include "Thumbnails/Tools/SimplePositionOverlay.h"
-#include "Thumbnails/Tools/SimpleThumbnailComponent.h"
 
 //[/Headers]
 
@@ -173,10 +170,6 @@ private:
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
     juce::AudioTransportSource transportSource;
     TransportState state;
-
-    juce::AudioThumbnailCache thumbnailCache;
-    SimpleThumbnailComponent thumbnailComp;
-    SimplePositionOverlay positionOverlay;
 
     juce::File file;
 

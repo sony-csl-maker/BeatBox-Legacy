@@ -29,16 +29,10 @@
 
 //==============================================================================
 AudioResultComponent::AudioResultComponent() :
-        state (Stopped),
-        thumbnailCache (5),
-        thumbnailComp (512, formatManager, thumbnailCache),
-        positionOverlay (transportSource)
+        state (Stopped)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
-
-    addAndMakeVisible (&thumbnailComp);
-    addAndMakeVisible (&positionOverlay);
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -102,8 +96,6 @@ void AudioResultComponent::resized()
     //[/UserPreResize]
 
     juce::Rectangle<int> thumbnailBounds (10, 670, getWidth() - 20, 100);
-    thumbnailComp.setBounds (thumbnailBounds);
-    positionOverlay.setBounds (thumbnailBounds);
 
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]

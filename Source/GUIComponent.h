@@ -310,7 +310,7 @@ private:
 
     ////////////////////////////////////////////////////////////////////////////
 
-    std::unique_ptr<ProcessorComponent> processor = std::make_unique<ProcessorComponent>();
+    std::shared_ptr<ProcessorComponent> processor = std::make_shared<ProcessorComponent>();
 
     // std::unique_ptr<OriginalThumbnailComponent> thumbnailOriginal;
 

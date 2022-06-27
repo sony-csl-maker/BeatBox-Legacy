@@ -3,7 +3,7 @@
 //==============================================================================
 ProcessorComponent::ProcessorComponent()
 {
-    startTimer(50);
+    // Timer::startTimer(50);
 }
 
 ProcessorComponent::~ProcessorComponent()
@@ -231,36 +231,41 @@ void ProcessorComponent::transferTrack()
     }
 }
 
+void ProcessorComponent::encodeDecodeSample(long unsigned int index)
+{
+    decodedSamplesTab.push_back(processSamples(samplesTab[index]));
+}
+
 void ProcessorComponent::processAudioTrack()
 {
-    encoderComponent = std::make_unique<EncoderComponent>();
+    encoderComponent = std::make_unique<EncoderComponent>(std::bind(&ProcessorComponent::encodeDecodeSample, 0, this), samplesTab.size());
     if (encoderComponent->runThread()) {
-    transferTrack();
+        transferTrack();
 
-    std::vector<Array<float>> tempSampleTab;
+        std::vector<Array<float>> tempSampleTab;
 
-    // the problem lies on samplesTab being empty :/ check from previous code if it's the case
+        // the problem lies on samplesTab being empty :/ check from previous code if it's the case
 
-    for (size_t sampleIndex = 0; sampleIndex < samplesTab.size(); sampleIndex += 1)
-        tempSampleTab.push_back(processSamples(samplesTab[sampleIndex]));
+        for (size_t sampleIndex = 0; sampleIndex < samplesTab.size(); sampleIndex += 1)
+            tempSampleTab.push_back(processSamples(samplesTab[sampleIndex]));
 
-    encodedAudioTimeSeries.resize(audioTimeSeries.size());
-    std::fill(encodedAudioTimeSeries.begin(), encodedAudioTimeSeries.end(), 0.0f);
+        encodedAudioTimeSeries.resize(audioTimeSeries.size());
+        std::fill(encodedAudioTimeSeries.begin(), encodedAudioTimeSeries.end(), 0.0f);
 
-    for (long unsigned int index = 0; index < startEnd.size(); index += 1)
-    {
-        for (long unsigned int sampleIndex = 0; sampleIndex < 24575; sampleIndex += 1)
+        for (long unsigned int index = 0; index < startEnd.size(); index += 1)
         {
-            encodedAudioTimeSeries[startEnd.at(index).first + sampleIndex] = tempSampleTab[index][sampleIndex];
+            for (long unsigned int sampleIndex = 0; sampleIndex < 24575; sampleIndex += 1)
+            {
+                encodedAudioTimeSeries[startEnd.at(index).first + sampleIndex] = tempSampleTab[index][sampleIndex];
+            }
         }
-    }
 
-    AudioBuffer<float> buffer(1, encodedAudioTimeSeries.size());
+        AudioBuffer<float> buffer(1, encodedAudioTimeSeries.size());
 
-    for (long unsigned int index = 0; index < encodedAudioTimeSeries.size(); index += 1)
-        buffer.setSample(0, index, encodedAudioTimeSeries[index]);
+        for (long unsigned int index = 0; index < encodedAudioTimeSeries.size(); index += 1)
+            buffer.setSample(0, index, encodedAudioTimeSeries[index]);
 
-    _convertedBuffer = buffer;
+        _convertedBuffer = buffer;
     }
 }
 

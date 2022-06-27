@@ -9,31 +9,29 @@
 
 // Juce
 #include <JuceHeader.h>
+#include "ProcessorComponent.h"
 
 class EncoderComponent : public juce::ThreadWithProgressWindow
 {
     public:
-        EncoderComponent() : ThreadWithProgressWindow("busy ...", true, true)
+        EncoderComponent(std::function<void(long unsigned int)> callBack, long unsigned int size) : ThreadWithProgressWindow("busy ...", true, true)
         {
+            _callBack = callBack;
+            _size = size;
         }
 
         void run()
         {
-            for (int i = 0; i < 1000000; ++i)
-            {
-                // must check this as often as possible, because this is
-                // how we know if the user's pressed 'cancel'
+            for (long unsigned int index = 0; index < _size; index++) {
                 if (threadShouldExit())
                     break;
-
-                // this will update the progress bar on the dialog box
-                setProgress (i / (double) 100);
-
-
-                //   ... do the business here...
+                setProgress(index / 100);
+                _callBack(index);
             }
         }
 
     private:
+        std::function<void(long unsigned int)> _callBack;
+        long unsigned int _size;
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EncoderComponent)
 };

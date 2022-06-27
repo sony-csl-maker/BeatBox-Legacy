@@ -59,6 +59,8 @@ public:
 
     juce::Array<float> processSamples(std::vector<float> sample);
 
+    void encodeDecodeSample(long unsigned int index);
+
     void processAudioTrack();
 
     void processOutputStream();
@@ -76,6 +78,8 @@ public:
     void setTemporaryPath(std::string path) { temporaryPath = path; };
     std::string getTempFilename() { return temporaryPath; };
 
+    std::vector<std::vector<float>> getSamplesTab() { return samplesTab; };
+
 private:
     //==========================================================================
     std::vector<float> audioTimeSeries;
@@ -85,10 +89,12 @@ private:
     std::vector<float> peaksIndex;
     std::vector<float> peaksValues;
 
+    std::vector<Array<float>> decodedSamplesTab;
+
     std::vector<std::pair<float, float>> startEnd;
 
     std::vector<std::vector<float>> samplesTab;
-    std::vector<std::vector<float>> encodedSamplesTab;
+    // std::vector<std::vector<float>> encodedSamplesTab;
 
     std::string filename;
     std::string temporaryPath;
